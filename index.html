@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="pageBrowserTitle">Task & Budget Hub — Ate Tine</title>
+    <title id="pageBrowserTitle">Task & Budget Hub - Ate Tine</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
@@ -15,7 +15,7 @@
         .tab-content.active { display: block; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans pb-20">
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans pb-24">
 
     <!-- Top Header -->
     <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
@@ -188,9 +188,9 @@
                     </div>
                     <!-- Legend -->
                     <div class="flex flex-wrap items-center gap-3 text-xs">
-                        <span class="flex items-center space-x-1.5"><span class="w-3 h-3 rounded-full bg-pink-500"></span><span class="text-slate-600">Work/Tasks</span></span>
-                        <span class="flex items-center space-x-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500"></span><span class="text-slate-600">Income</span></span>
-                        <span class="flex items-center space-x-1.5"><span class="w-3 h-3 rounded-full bg-rose-500"></span><span class="text-slate-600">Expense/Loan</span></span>
+                        <span class="flex items-center space-x-1.5"><span class="w-3 h-3 rounded-full bg-pink-500"></span><span class="text-slate-600">Tasks</span></span>
+                        <span class="flex items-center space-x-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500"></span><span class="text-slate-600">Income / Paid</span></span>
+                        <span class="flex items-center space-x-1.5"><span class="w-3 h-3 rounded-full bg-rose-500"></span><span class="text-slate-600">Expense</span></span>
                         <span class="flex items-center space-x-1.5"><span class="w-3 h-3 rounded-full bg-amber-500"></span><span class="text-slate-600">Forecast</span></span>
                     </div>
                 </div>
@@ -279,6 +279,19 @@
                         </tr>
                     </thead>
                     <tbody id="bankSavingsTableBody"></tbody>
+                </table>
+            </div>
+            <div class="bg-white p-4 rounded-xl shadow overflow-x-auto">
+                <h3 class="font-bold text-gray-700 mb-2 text-sm">Savings History</h3>
+                <table class="w-full text-left text-xs">
+                    <thead>
+                        <tr class="border-b text-gray-500 bg-gray-50">
+                            <th class="p-2">Date</th>
+                            <th class="p-2">Description</th>
+                            <th class="p-2 text-right">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody id="savingsHistoryTable"></tbody>
                 </table>
             </div>
         </div>
@@ -396,6 +409,7 @@
     </nav>
 
     <!-- MODALS -->
+    <!-- Task Modal -->
     <div id="task-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-white rounded-3xl shadow-xl max-w-md w-full p-6 space-y-4 my-8">
             <div class="flex items-center justify-between pb-2 border-b border-slate-100">
@@ -539,6 +553,7 @@
             updateTodayBadge();
             renderTasks();
             initChart();
+            renderAll();
         });
 
         function switchTab(tabId) {
@@ -558,7 +573,7 @@
 
             if(tabId === 'calendar') renderCalendar();
             if(tabId === 'todo') { renderTasks(); updateChart(); }
-            if(['budget', 'savings', 'loans', 'forecast'].includes(tabId)) updateCharts();
+            if(['budget', 'savings', 'loans', 'forecast'].includes(tabId)) { renderAll(); updateCharts(); }
         }
 
         function formatPHP(num) {
@@ -643,7 +658,7 @@
         function saveData() {
             localStorage.setItem('budgetAppV17', JSON.stringify(budgetData));
             if(activeTab === 'calendar') renderCalendar();
-            updateCharts();
+            renderAll();
         }
 
         function addTransaction() {
@@ -699,7 +714,15 @@
         }
         function updateForecastStatus(id, newStatus) {
             const f = budgetData.forecasts.find(x => x.id === id);
-            if(f) { f.status = newStatus; saveData(); }
+            if(f) {
+                f.status = newStatus;
+                if(newStatus === 'PAID') {
+                    budgetData.transactions.unshift({
+                        id: Date.now(), title: `Forecast: ${f.title}`, amount: f.amount, category: f.category, type: f.type === 'INCOME' ? 'INCOME - GENERAL' : 'EXPENSE - GENERAL', date: f.date
+                    });
+                }
+                saveData();
+            }
         }
         function deleteForecast(id) { budgetData.forecasts = budgetData.forecasts.filter(f => f.id !== id); saveData(); }
 
@@ -777,14 +800,15 @@
 
                 let pills = '';
                 dayTasks.forEach(t => {
-                    pills += `<div class="text-[9px] px-1.5 py-0.5 rounded truncate bg-pink-500 text-white font-medium mt-0.5" title="${t.activity}">Task: ${t.activity}</div>`;
+                    pills += `<div class="text-[9px] px-1.5 py-0.5 rounded truncate bg-pink-500 text-white font-medium mt-0.5" title="Task: ${t.activity}">Task: ${t.activity}</div>`;
                 });
                 dayTxns.forEach(tx => {
                     const bg = tx.type.startsWith('INCOME') ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white';
-                    pills += `<div class="text-[9px] px-1.5 py-0.5 rounded truncate ${bg} font-medium mt-0.5" title="${tx.title}: ${tx.amount}">${tx.title}</div>`;
+                    pills += `<div class="text-[9px] px-1.5 py-0.5 rounded truncate ${bg} font-medium mt-0.5" title="${tx.title}: ${formatPHP(tx.amount)}">${tx.title}</div>`;
                 });
                 dayForecasts.forEach(f => {
-                    pills += `<div class="text-[9px] px-1.5 py-0.5 rounded truncate bg-amber-500 text-white font-medium mt-0.5" title="Forecast: ${f.title}">Fc: ${f.title}</div>`;
+                    const bg = f.status === 'PAID' ? 'bg-emerald-500 text-white' : f.type === 'INCOME' ? 'bg-emerald-600 text-white' : 'bg-amber-500 text-white';
+                    pills += `<div class="text-[9px] px-1.5 py-0.5 rounded truncate ${bg} font-medium mt-0.5" title="Forecast: ${f.title}">Fc: ${f.title} (${formatPHP(f.amount)})</div>`;
                 });
 
                 daysHtml += `
@@ -826,7 +850,6 @@
         }
 
         function updateCharts() {
-            if(!['budget', 'savings', 'loans'].includes(activeTab)) return;
             const income = budgetData.transactions.filter(t => t.type.startsWith('INCOME')).reduce((a, t) => a + t.amount, 0);
             const expense = budgetData.transactions.filter(t => t.type.startsWith('EXPENSE')).reduce((a, t) => a + t.amount, 0);
             const createOrUpdate = (id, type, data, options) => {
@@ -865,6 +888,13 @@
                     <td class="p-2 text-center"><button onclick="deleteLoan(${l.id})" class="text-red-500"><i class="fas fa-trash"></i></button></td>
                 </tr>
             `).join('') || '<tr><td colspan="4" class="p-3 text-center text-gray-400">No active loans.</td></tr>';
+
+            document.getElementById('forecastContainer').innerHTML = budgetData.forecasts.map(f => `
+                <div class="bg-white p-3 rounded shadow flex justify-between items-center text-xs">
+                    <div><b>${f.date}</b> - ${f.title} (${f.type}): <b>${formatPHP(f.amount)}</b> [${f.status}]</div>
+                    <button onclick="deleteForecast(${f.id})" class="text-red-500"><i class="fas fa-trash"></i></button>
+                </div>
+            `).join('') || '<div class="text-gray-400 text-xs">No forecasts recorded.</div>';
 
             updateCharts();
         }

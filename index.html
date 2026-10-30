@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="pageBrowserTitle">Task & Budget Manager - Ate Tine</title>
+    <title id="pageBrowserTitle">Task & Budget Hub — Ate Tine</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
@@ -281,19 +281,6 @@
                     <tbody id="bankSavingsTableBody"></tbody>
                 </table>
             </div>
-            <div class="bg-white p-4 rounded-xl shadow overflow-x-auto">
-                <h3 class="font-bold text-gray-700 mb-2 text-sm">Savings History</h3>
-                <table class="w-full text-left text-xs">
-                    <thead>
-                        <tr class="border-b text-gray-500 bg-gray-50">
-                            <th class="p-2">Date</th>
-                            <th class="p-2">Description</th>
-                            <th class="p-2 text-right">Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody id="savingsHistoryTable"></tbody>
-                </table>
-            </div>
         </div>
 
         <!-- ================= 5. LOANS PAGE ================= -->
@@ -392,11 +379,6 @@
                     <p>Reach out directly at <a href="mailto:kristine.aquino2019@gmail.com" class="text-pink-600 font-medium underline">kristine.aquino2019@gmail.com</a> or connect on LinkedIn at <a href="https://www.linkedin.com/in/kristineaquino/" target="_blank" class="text-pink-600 font-medium underline">https://www.linkedin.com/in/kristineaquino/</a></p>
                     <p class="font-semibold text-slate-900 pt-2">~ Ate Tine</p>
                 </div>
-                <div class="pt-4 border-t border-slate-100">
-                    <a href="https://sites.google.com/view/kristinedaquino/home" target="_blank" class="inline-flex items-center space-x-2 bg-pink-50 hover:bg-pink-100 text-pink-700 text-xs font-semibold px-4 py-2.5 rounded-xl transition-all">
-                        <i class="fa-solid fa-globe"></i><span>View Google Sites Portfolio</span>
-                    </a>
-                </div>
             </div>
         </div>
 
@@ -414,7 +396,6 @@
     </nav>
 
     <!-- MODALS -->
-    <!-- Task Modal -->
     <div id="task-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-white rounded-3xl shadow-xl max-w-md w-full p-6 space-y-4 my-8">
             <div class="flex items-center justify-between pb-2 border-b border-slate-100">
@@ -551,17 +532,17 @@
         let statusChartInstance = null;
         let currentDate = new Date();
         let charts = {};
+        let activeTab = 'todo';
 
         document.addEventListener('DOMContentLoaded', () => {
             initYearDropdowns();
             updateTodayBadge();
             renderTasks();
-            renderCalendar();
             initChart();
-            renderAll();
         });
 
         function switchTab(tabId) {
+            activeTab = tabId;
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById(`tab-${tabId}`).classList.add('active');
 
@@ -577,7 +558,7 @@
 
             if(tabId === 'calendar') renderCalendar();
             if(tabId === 'todo') { renderTasks(); updateChart(); }
-            if(tabId === 'budget' || tabId === 'savings' || tabId === 'loans' || tabId === 'forecast') updateCharts();
+            if(['budget', 'savings', 'loans', 'forecast'].includes(tabId)) updateCharts();
         }
 
         function formatPHP(num) {
@@ -607,13 +588,11 @@
             else container.classList.remove('hidden');
         }
 
-        function openTaskModal(editId = null) {
-            const modal = document.getElementById('task-modal');
-            const form = document.getElementById('task-form');
-            form.reset();
+        function openTaskModal() {
+            document.getElementById('task-form').reset();
             document.getElementById('task-edit-id').value = '';
             document.getElementById('task-date').value = new Date().toISOString().split('T')[0];
-            modal.classList.remove('hidden');
+            document.getElementById('task-modal').classList.remove('hidden');
         }
 
         function closeTaskModal() { document.getElementById('task-modal').classList.add('hidden'); }
@@ -657,15 +636,14 @@
 
         function saveAndRefresh() {
             localStorage.setItem('tine_tasks', JSON.stringify(tasks));
-            renderTasks();
-            renderCalendar();
-            updateChart();
+            if(activeTab === 'todo') { renderTasks(); updateChart(); }
+            if(activeTab === 'calendar') renderCalendar();
         }
 
         function saveData() {
             localStorage.setItem('budgetAppV17', JSON.stringify(budgetData));
-            renderAll();
-            renderCalendar();
+            if(activeTab === 'calendar') renderCalendar();
+            updateCharts();
         }
 
         function addTransaction() {
@@ -793,7 +771,6 @@
                 const dateString = `${year}-${monthStr}-${dayStr}`;
                 const isToday = dateString === todayStr;
 
-                // Gather tasks + income/expenses/forecasts
                 const dayTasks = tasks.filter(t => t.date === dateString);
                 const dayTxns = budgetData.transactions.filter(tx => tx.date === dateString);
                 const dayForecasts = budgetData.forecasts.filter(f => f.date === dateString);
@@ -832,6 +809,7 @@
                 data: { labels: ['Completed', 'On Going', 'Rescheduled', 'Canceled'], datasets: [{ data: [0,0,0,0], backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#f43f5e'], borderWidth: 0 }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } }
             });
+            updateChart();
         }
 
         function updateChart() {
@@ -848,6 +826,7 @@
         }
 
         function updateCharts() {
+            if(!['budget', 'savings', 'loans'].includes(activeTab)) return;
             const income = budgetData.transactions.filter(t => t.type.startsWith('INCOME')).reduce((a, t) => a + t.amount, 0);
             const expense = budgetData.transactions.filter(t => t.type.startsWith('EXPENSE')).reduce((a, t) => a + t.amount, 0);
             const createOrUpdate = (id, type, data, options) => {
@@ -894,16 +873,18 @@
             let csv = 'Status,Urgency,Activity,Date,Category\r\n';
             tasks.forEach(t => { csv += `"${t.status}","${t.urgency}","${t.activity}","${t.date}","${t.category}"\r\n`; });
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = url; a.download = 'tasks_export.csv'; a.click();
+            a.href = URL.createObjectURL(blob);
+            a.download = 'tasks_export.csv';
+            a.click();
         }
 
         function downloadBackup() {
             const fullData = { tasks, budgetData };
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fullData, null, 2));
             const a = document.createElement('a');
-            a.href = dataStr; a.download = 'task_budget_hub_backup.json'; a.click();
+            a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fullData, null, 2));
+            a.download = 'task_budget_hub_backup.json';
+            a.click();
         }
 
         function restoreBackup(event) {

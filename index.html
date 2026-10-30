@@ -201,22 +201,7 @@
             <div id="forecastContainer" class="space-y-6"></div>
         </div>
 
-        <!-- ================= 5. FINANCIAL SUMMARY PAGE ================= -->
-        <div id="tab-summary" class="tab-content space-y-6">
-            <h2 class="text-xl font-bold text-gray-800">Financial Summary</h2>
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 space-y-3">
-                <div class="flex justify-between text-green-600 font-bold"><span>Total Income:</span><span id="sumIncome">₱0.00</span></div>
-                <div class="flex justify-between text-red-600 font-bold"><span>Total Expenses:</span><span id="sumExpense">₱0.00</span></div>
-                <div class="flex justify-between text-amber-600 font-bold"><span>Total Forecasted (Expense):</span><span id="sumForecast">₱0.00</span></div>
-                <hr class="border-gray-100">
-                <div class="flex justify-between text-gray-800 font-bold text-sm"><span>Net Balance:</span><span id="sumNet">₱0.00</span></div>
-            </div>
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200"><canvas id="summaryIEChart"></canvas></div>
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200"><canvas id="summaryLoanChart"></canvas></div>
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200"><canvas id="summarySavingsChart"></canvas></div>
-        </div>
-
-        <!-- ================= 6. TASKS PAGE (TO-DO) ================= -->
+        <!-- ================= 5. TASKS PAGE (TO-DO) ================= -->
         <div id="tab-tasks" class="tab-content space-y-6">
             <!-- Graph & Stats Row -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -321,7 +306,7 @@
             </div>
         </div>
 
-        <!-- ================= 7. CALENDAR PAGE ================= -->
+        <!-- ================= 6. CALENDAR PAGE ================= -->
         <div id="tab-calendar" class="tab-content space-y-6">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <div class="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4">
@@ -353,7 +338,7 @@
             </div>
         </div>
 
-        <!-- ================= 8. SETTINGS PAGE ================= -->
+        <!-- ================= 7. SETTINGS PAGE ================= -->
         <div id="tab-settings" class="tab-content space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Backup & Restore -->
@@ -398,7 +383,7 @@
             </div>
         </div>
 
-        <!-- ================= 9. ABOUT PAGE ================= -->
+        <!-- ================= 8. ABOUT PAGE ================= -->
         <div id="tab-about" class="tab-content space-y-6">
             <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200 max-w-3xl mx-auto space-y-6">
                 <div class="flex items-center space-x-4">
@@ -451,7 +436,6 @@
         <button onclick="switchTab('savings')" id="nav-savings" class="nav-btn text-gray-400 flex flex-col items-center"><i class="fas fa-piggy-bank text-base"></i><span class="text-[10px] font-medium">Savings</span></button>
         <button onclick="switchTab('loans')" id="nav-loans" class="nav-btn text-gray-400 flex flex-col items-center"><i class="fas fa-hand-holding-usd text-base"></i><span class="text-[10px] font-medium">Loans</span></button>
         <button onclick="switchTab('forecast')" id="nav-forecast" class="nav-btn text-gray-400 flex flex-col items-center"><i class="fas fa-calendar-alt text-base"></i><span class="text-[10px] font-medium">Forecast</span></button>
-        <button onclick="switchTab('summary')" id="nav-summary" class="nav-btn text-gray-400 flex flex-col items-center"><i class="fas fa-chart-pie text-base"></i><span class="text-[10px] font-medium">Summary</span></button>
         <button onclick="switchTab('tasks')" id="nav-tasks" class="nav-btn text-gray-400 flex flex-col items-center"><i class="fas fa-list-check text-base"></i><span class="text-[10px] font-medium">Tasks</span></button>
         <button onclick="switchTab('calendar')" id="nav-calendar" class="nav-btn text-gray-400 flex flex-col items-center"><i class="fas fa-calendar-days text-base"></i><span class="text-[10px] font-medium">Calendar</span></button>
         <button onclick="switchTab('settings')" id="nav-settings" class="nav-btn text-gray-400 flex flex-col items-center"><i class="fas fa-cog text-base"></i><span class="text-[10px] font-medium">Settings</span></button>
@@ -817,16 +801,6 @@
         }
 
         function updateCharts() {
-            const income = data.transactions.filter(t => t.type.startsWith('INCOME')).reduce((a, t) => a + t.amount, 0);
-            const expense = data.transactions.filter(t => t.type.startsWith('EXPENSE')).reduce((a, t) => a + t.amount, 0);
-            const totalForecast = data.forecasts.filter(f => f.status === 'FORECASTED' && f.type === 'EXPENSE').reduce((a, f) => a + f.amount, 0);
-
-            document.getElementById('sumIncome').innerText = formatPHP(income);
-            document.getElementById('sumExpense').innerText = formatPHP(expense);
-            const sumForecastElem = document.getElementById('sumForecast');
-            if(sumForecastElem) sumForecastElem.innerText = formatPHP(totalForecast);
-            document.getElementById('sumNet').innerText = formatPHP(income - expense);
-
             const createOrUpdate = (id, type, chartData, options) => {
                 const ctx = document.getElementById(id);
                 if(!ctx) return;
@@ -834,13 +808,17 @@
                 charts[id] = new Chart(ctx.getContext('2d'), { type, data: chartData, options: { responsive: true, ...options } });
             };
 
+            const income = data.transactions.filter(t => t.type.startsWith('INCOME')).reduce((a, t) => a + t.amount, 0);
+            const expense = data.transactions.filter(t => t.type.startsWith('EXPENSE')).reduce((a, t) => a + t.amount, 0);
+            const totalForecast = data.forecasts.filter(f => f.status === 'FORECASTED' && f.type === 'EXPENSE').reduce((a, f) => a + f.amount, 0);
+
             const ieForecastData = { labels: ['Income', 'Expense', 'Forecasted'], datasets: [{ label: 'Amount (PHP)', data: [income, expense, totalForecast], backgroundColor: ['#10B981', '#EF4444', '#F59E0B'] }] };
             const loanData = { labels: data.loans.map(l => l.name), datasets: [{ label: 'Remaining', data: data.loans.map(l => l.remaining), backgroundColor: '#F97316' }] };
             const savData = { labels: data.savings.map(s => s.name), datasets: [{ label: 'Balance', data: data.savings.map(s => s.balance), backgroundColor: '#3B82F6' }] };
 
-            ['budgetIEChart', 'summaryIEChart'].forEach(id => createOrUpdate(id, 'bar', ieForecastData, { plugins: { legend: { display: false }, title: { display: true, text: 'Income, Expense & Forecast Overview' } } }));
-            ['budgetLoanChart', 'loansPageChart', 'summaryLoanChart'].forEach(id => createOrUpdate(id, 'bar', loanData, { plugins: { title: { display: true, text: 'Remaining Loans' } } }));
-            ['budgetSavingsChart', 'savingsPageChart', 'summarySavingsChart'].forEach(id => createOrUpdate(id, 'bar', savData, { plugins: { legend: { display: false }, title: { display: true, text: 'Savings Balances' } } }));
+            createOrUpdate('budgetIEChart', 'bar', ieForecastData, { plugins: { legend: { display: false }, title: { display: true, text: 'Income, Expense & Forecast Overview' } } });
+            ['budgetLoanChart', 'loansPageChart'].forEach(id => createOrUpdate(id, 'bar', loanData, { plugins: { title: { display: true, text: 'Remaining Loans' } } }));
+            ['budgetSavingsChart', 'savingsPageChart'].forEach(id => createOrUpdate(id, 'bar', savData, { plugins: { legend: { display: false }, title: { display: true, text: 'Savings Balances' } } }));
         }
 
         function exportToExcelWithCharts() {
@@ -1132,22 +1110,16 @@
                 const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 const isToday = dateString === todayStr;
                 
-                // Get tasks
                 const dayTasks = tasks.filter(t => t.date === dateString);
-                // Get transactions (Income & Expenses)
                 const dayTxns = data.transactions.filter(t => t.date === dateString);
-                // Get forecasts
                 const dayForecasts = data.forecasts.filter(f => f.date === dateString && f.status === 'FORECASTED');
 
                 let pillsHtml = '';
-                
-                // Task pills
                 dayTasks.forEach(t => {
                     const colorBg = t.category === 'WORK' ? 'bg-pink-500 text-white' : t.category === 'PERSONAL' ? 'bg-emerald-500 text-white' : t.category === 'SCHOOL' ? 'bg-amber-500 text-white' : 'bg-blue-500 text-white';
                     pillsHtml += `<div class="text-[9px] px-1.5 py-0.5 rounded truncate ${colorBg} font-medium mt-0.5" title="Task: ${t.activity}"><i class="fa-solid fa-list-check mr-1"></i>${t.activity}</div>`;
                 });
 
-                // Transaction pills (Actual Income / Expenses)
                 dayTxns.forEach(txn => {
                     const isInc = txn.type.startsWith('INCOME');
                     const colorBg = isInc ? 'bg-emerald-600 text-white font-bold' : 'bg-rose-600 text-white font-bold';
@@ -1155,7 +1127,6 @@
                     pillsHtml += `<div class="text-[9px] px-1.5 py-0.5 rounded truncate ${colorBg} mt-0.5" title="${txn.title}: ${formatPHP(txn.amount)}"><i class="fa-solid ${icon} mr-1"></i>${txn.title}: ${formatPHP(txn.amount)}</div>`;
                 });
 
-                // Forecast pills
                 dayForecasts.forEach(f => {
                     const isInc = f.type === 'INCOME';
                     const colorBg = isInc ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-amber-100 text-amber-800 border border-amber-300';

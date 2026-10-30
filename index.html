@@ -1,0 +1,1580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Planner Organizer</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="[suspicious link removed]"></script>
+    <!-- FontAwesome 6 CDN -->
+    <link rel="stylesheet" href="[suspicious link removed]">
+    <!-- Chart.js CDN -->
+    <script src="[suspicious link removed]"></script>
+    <style>
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 font-sans pb-16">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-indigo-700 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white/10 p-2 rounded-xl">
+                    <i class="fa-solid fa-book-bookmark text-xl text-amber-300"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold leading-tight">Digital Planner Organizer</h1>
+                    <p class="text-xs text-indigo-200">Manila, Philippines Time</p>
+                </div>
+            </div>
+
+            <!-- Main Module Selector -->
+            <nav class="flex items-center space-x-1.5 bg-indigo-800/60 p-1.5 rounded-xl border border-indigo-600/50">
+                <button onclick="switchMainModule('budget')" id="module-btn-budget" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-indigo-700 shadow flex items-center space-x-1.5">
+                    <i class="fa-solid fa-wallet"></i><span>Budget Tracker</span>
+                </button>
+                <button onclick="switchMainModule('tasks')" id="module-btn-tasks" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-indigo-100 hover:bg-indigo-700 flex items-center space-x-1.5">
+                    <i class="fa-solid fa-list-check"></i><span>Task Manager</span>
+                </button>
+                <button onclick="switchMainModule('settings')" id="module-btn-settings" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-indigo-100 hover:bg-indigo-700 flex items-center space-x-1.5">
+                    <i class="fa-solid fa-sliders"></i><span>Settings & Data</span>
+                </button>
+                <button onclick="switchMainModule('about')" id="module-btn-about" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-indigo-100 hover:bg-indigo-700 flex items-center space-x-1.5">
+                    <i class="fa-solid fa-circle-info"></i><span>About</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- Budget Sub-Navigation -->
+        <div id="budget-subnav" class="bg-indigo-800 border-t border-indigo-600/50 px-4 py-2">
+            <div class="max-w-7xl mx-auto flex flex-wrap gap-2 text-xs">
+                <button onclick="switchBudgetTab(0)" class="budget-sub-btn bg-indigo-900 text-white px-3 py-1 rounded-lg font-semibold flex items-center space-x-1"><i class="fa-solid fa-chart-line text-[10px]"></i><span>Overview</span></button>
+                <button onclick="switchBudgetTab(1)" class="budget-sub-btn text-indigo-200 hover:bg-indigo-700 px-3 py-1 rounded-lg font-semibold flex items-center space-x-1"><i class="fa-solid fa-piggy-bank text-[10px]"></i><span>Savings</span></button>
+                <button onclick="switchBudgetTab(2)" class="budget-sub-btn text-indigo-200 hover:bg-indigo-700 px-3 py-1 rounded-lg font-semibold flex items-center space-x-1"><i class="fa-solid fa-hand-holding-dollar text-[10px]"></i><span>Loans</span></button>
+                <button onclick="switchBudgetTab(3)" class="budget-sub-btn text-indigo-200 hover:bg-indigo-700 px-3 py-1 rounded-lg font-semibold flex items-center space-x-1"><i class="fa-solid fa-calendar-days text-[10px]"></i><span>Forecast</span></button>
+                <button onclick="switchBudgetTab(4)" class="budget-sub-btn text-indigo-200 hover:bg-indigo-700 px-3 py-1 rounded-lg font-semibold flex items-center space-x-1"><i class="fa-solid fa-chart-pie text-[10px]"></i><span>Summary</span></button>
+            </div>
+        </div>
+
+        <!-- Task Sub-Navigation -->
+        <div id="tasks-subnav" class="bg-indigo-800 border-t border-indigo-600/50 px-4 py-2 hidden">
+            <div class="max-w-7xl mx-auto flex flex-wrap gap-2 text-xs justify-between items-center">
+                <div class="flex space-x-2">
+                    <button onclick="switchTaskTab('todo')" id="task-sub-todo" class="task-sub-btn bg-indigo-900 text-white px-3 py-1 rounded-lg font-semibold flex items-center space-x-1"><i class="fa-solid fa-list-check text-[10px]"></i><span>To Do List</span></button>
+                    <button onclick="switchTaskTab('calendar')" id="task-sub-calendar" class="task-sub-btn text-indigo-200 hover:bg-indigo-700 px-3 py-1 rounded-lg font-semibold flex items-center space-x-1"><i class="fa-solid fa-calendar text-[10px]"></i><span>Calendar View</span></button>
+                </div>
+                <button onclick="openTaskModal()" class="bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold px-3 py-1 rounded-lg shadow transition-all flex items-center space-x-1">
+                    <i class="fa-solid fa-plus text-[10px]"></i><span>Add Task</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- MODULE 1: BUDGET TRACKER -->
+        <div id="module-budget" class="module-section space-y-6">
+
+            <!-- 1.1 BUDGET OVERVIEW -->
+            <div id="budget-tab-0" class="budget-tab-content space-y-6">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-slate-800">Budget Overview</h2>
+                    <div class="flex space-x-2">
+                        <button onclick="exportBudgetCSV()" class="bg-indigo-700 hover:bg-indigo-800 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow flex items-center space-x-1">
+                            <i class="fa-solid fa-file-excel"></i><span>Export CSV</span>
+                        </button>
+                        <button onclick="openModal('transactionModal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow">Add Entry</button>
+                    </div>
+                </div>
+
+                <!-- Visualizations Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-2">
+                        <h3 class="font-bold text-slate-700 text-xs uppercase tracking-wider">Income vs Expenses</h3>
+                        <canvas id="budgetIEChart" class="max-h-48"></canvas>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-2">
+                        <h3 class="font-bold text-slate-700 text-xs uppercase tracking-wider">Remaining Loans</h3>
+                        <canvas id="budgetLoanChart" class="max-h-48"></canvas>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-2">
+                        <h3 class="font-bold text-slate-700 text-xs uppercase tracking-wider">Savings Balances</h3>
+                        <canvas id="budgetSavingsChart" class="max-h-48"></canvas>
+                    </div>
+                </div>
+
+                <!-- Transactions Data List -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                    <h3 class="font-bold text-slate-800 mb-3 text-sm">Transactions & Inflows</h3>
+                    <div id="transactionList" class="space-y-2"></div>
+                </div>
+            </div>
+
+            <!-- 1.2 SAVINGS PAGE -->
+            <div id="budget-tab-1" class="budget-tab-content hidden space-y-6">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-slate-800">Savings Accounts</h2>
+                    <button onclick="openModal('savingsModal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow">Add Bank Savings</button>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                    <canvas id="savingsPageChart" class="max-h-56"></canvas>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                    <h3 class="font-bold text-slate-800 mb-3 text-sm">Bank Savings Accounts</h3>
+                    <div id="savingsList" class="space-y-3"></div>
+                </div>
+                <!-- Savings History Table -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                    <h3 class="font-bold text-slate-800 mb-3 text-sm">Savings Deposit & Withdrawal History</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead>
+                                <tr class="border-b border-slate-200 text-slate-500 uppercase">
+                                    <th class="py-2.5">Date</th>
+                                    <th class="py-2.5">Description</th>
+                                    <th class="py-2.5 text-right">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody id="savingsHistoryTable" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 1.3 LOANS PAGE -->
+            <div id="budget-tab-2" class="budget-tab-content hidden space-y-6">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-slate-800">Loans Tracker</h2>
+                    <button onclick="openModal('loanModal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow">Add Loan</button>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                    <canvas id="loansPageChart" class="max-h-56"></canvas>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                    <h3 class="font-bold text-slate-800 mb-3 text-sm">Active Loans</h3>
+                    <div id="loanList" class="space-y-3"></div>
+                </div>
+                <!-- Loan Payment History Table -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                    <h3 class="font-bold text-slate-800 mb-3 text-sm">Loan Payment History (Checked Forecasts)</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead>
+                                <tr class="border-b border-slate-200 text-slate-500 uppercase">
+                                    <th class="py-2.5">Date</th>
+                                    <th class="py-2.5">Loan Name</th>
+                                    <th class="py-2.5 text-right">Amount Paid</th>
+                                </tr>
+                            </thead>
+                            <tbody id="loanPaymentHistoryTable" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 1.4 FORECAST PAGE -->
+            <div id="budget-tab-3" class="budget-tab-content hidden space-y-6">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-slate-800">Expense Forecast</h2>
+                    <button onclick="openModal('forecastModal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow">Add Forecast</button>
+                </div>
+                <!-- Drilldown Filter -->
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex space-x-3">
+                    <select id="filterMonth" onchange="renderAllBudget()" class="w-1/2 border border-slate-200 p-2.5 rounded-xl text-xs bg-slate-50 outline-none focus:border-indigo-500">
+                        <option value="ALL">All Months</option>
+                        <option value="01">January</option><option value="02">February</option><option value="03">March</option>
+                        <option value="04">April</option><option value="05">May</option><option value="06">June</option>
+                        <option value="07">July</option><option value="08">August</option><option value="09">September</option>
+                        <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+                    </select>
+                    <select id="filterYear" onchange="renderAllBudget()" class="w-1/2 border border-slate-200 p-2.5 rounded-xl text-xs bg-slate-50 outline-none focus:border-indigo-500">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                    <div id="forecastList" class="space-y-4"></div>
+                </div>
+            </div>
+
+            <!-- 1.5 FINANCIAL SUMMARY PAGE -->
+            <div id="budget-tab-4" class="budget-tab-content hidden space-y-6">
+                <h2 class="text-xl font-bold text-slate-800">Financial Summary</h2>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+                    <div class="flex justify-between text-emerald-600 font-bold text-sm"><span>Total Income:</span><span id="sumIncome">₱0.00</span></div>
+                    <div class="flex justify-between text-rose-600 font-bold text-sm"><span>Total Expenses:</span><span id="sumExpense">₱0.00</span></div>
+                    <hr class="border-slate-200">
+                    <div class="flex justify-between text-slate-900 font-bold text-base"><span>Net Balance:</span><span id="sumNet">₱0.00</span></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200"><canvas id="summaryIEChart" class="max-h-48"></canvas></div>
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200"><canvas id="summaryLoanChart" class="max-h-48"></canvas></div>
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200"><canvas id="summarySavingsChart" class="max-h-48"></canvas></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- MODULE 2: TASK MANAGER -->
+        <div id="module-tasks" class="module-section hidden space-y-6">
+
+            <!-- 2.1 TO DO PAGE -->
+            <div id="task-tab-todo" class="task-tab-content space-y-6">
+                <!-- Graph & Stats Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Today's Status</h3>
+                            <span id="today-date-badge" class="text-xs bg-pink-100 text-pink-700 px-2.5 py-1 rounded-full font-medium"></span>
+                        </div>
+                        <div class="relative h-44 flex items-center justify-center">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Stats Cards -->
+                    <div class="lg:col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                            <span class="text-xs font-semibold text-slate-400 uppercase">Completed</span>
+                            <div class="flex items-end justify-between mt-2">
+                                <span id="stat-completed" class="text-3xl font-bold text-emerald-600">0</span>
+                                <div class="p-2 bg-emerald-50 text-emerald-600 rounded-xl"><i class="fa-solid fa-check"></i></div>
+                            </div>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                            <span class="text-xs font-semibold text-slate-400 uppercase">On Going</span>
+                            <div class="flex items-end justify-between mt-2">
+                                <span id="stat-ongoing" class="text-3xl font-bold text-blue-600">0</span>
+                                <div class="p-2 bg-blue-50 text-blue-600 rounded-xl"><i class="fa-solid fa-spinner"></i></div>
+                            </div>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                            <span class="text-xs font-semibold text-slate-400 uppercase">Rescheduled</span>
+                            <div class="flex items-end justify-between mt-2">
+                                <span id="stat-resched" class="text-3xl font-bold text-amber-600">0</span>
+                                <div class="p-2 bg-amber-50 text-amber-600 rounded-xl"><i class="fa-solid fa-calendar-arrow-right"></i></div>
+                            </div>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                            <span class="text-xs font-semibold text-slate-400 uppercase">Canceled</span>
+                            <div class="flex items-end justify-between mt-2">
+                                <span id="stat-canceled" class="text-3xl font-bold text-rose-600">0</span>
+                                <div class="p-2 bg-rose-50 text-rose-600 rounded-xl"><i class="fa-solid fa-ban"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters & Search Toolbar -->
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div class="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+                        <select id="filter-view" onchange="renderTasks()" class="bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-xl px-3 py-2 outline-none focus:border-pink-500 font-semibold">
+                            <option value="today">Today's Tasks</option>
+                            <option value="all">All Tasks</option>
+                        </select>
+
+                        <select id="filter-month" onchange="renderTasks()" class="bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-xl px-3 py-2 outline-none focus:border-pink-500">
+                            <option value="">All Months</option>
+                            <option value="01">January</option><option value="02">February</option><option value="03">March</option>
+                            <option value="04">April</option><option value="05">May</option><option value="06">June</option>
+                            <option value="07">July</option><option value="08">August</option><option value="09">September</option>
+                            <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+                        </select>
+
+                        <select id="filter-year" onchange="renderTasks()" class="bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-xl px-3 py-2 outline-none focus:border-pink-500">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+
+                    <div class="flex items-center gap-3 w-full md:w-auto justify-end">
+                        <div class="relative flex-1 md:w-64">
+                            <i class="fa-solid fa-search absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                            <input type="text" id="search-tasks" oninput="renderTasks()" placeholder="Search activities..." class="w-full pl-8 pr-4 py-2 bg-slate-50 border border-slate-200 text-xs rounded-xl outline-none focus:border-pink-500">
+                        </div>
+                        <button onclick="exportTasksToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2 rounded-xl shadow-sm flex items-center space-x-1.5 transition-all">
+                            <i class="fa-solid fa-file-excel"></i><span>Export CSV</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tasks Table Card -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+                        <h3 class="text-sm font-bold text-slate-900">Task List</h3>
+                        <span id="task-count-badge" class="text-xs text-slate-500 font-medium">0 tasks</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-200">
+                                    <th class="py-3 px-4">Status</th>
+                                    <th class="py-3 px-4">Urgency</th>
+                                    <th class="py-3 px-4">Activity</th>
+                                    <th class="py-3 px-4">Date & Time</th>
+                                    <th class="py-3 px-4">Category</th>
+                                    <th class="py-3 px-4">Links</th>
+                                    <th class="py-3 px-4">Presentation</th>
+                                    <th class="py-3 px-4">Remarks (Editable)</th>
+                                    <th class="py-3 px-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="task-table-body" class="divide-y divide-slate-100 text-slate-700">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2.2 CALENDAR PAGE -->
+            <div id="task-tab-calendar" class="task-tab-content hidden space-y-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4">
+                        <div class="flex items-center space-x-4">
+                            <h2 id="cal-month-year" class="text-lg font-bold text-slate-900">October 2026</h2>
+                            <div class="flex items-center space-x-1 bg-slate-100 p-1 rounded-xl">
+                                <button onclick="changeMonth(-1)" class="p-2 hover:bg-white rounded-lg text-slate-600 transition-all"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+                                <button onclick="goToCurrentMonth()" class="px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-white rounded-lg transition-all">Today</button>
+                                <button onclick="changeMonth(1)" class="p-2 hover:bg-white rounded-lg text-slate-600 transition-all"><i class="fa-solid fa-chevron-right text-xs"></i></button>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-3 text-xs">
+                            <span class="flex items-center space-x-1.5"><span class="w-3 h-3 rounded-full bg-pink-500"></span><span class="text-slate-600">Work</span></span>
+                            <span class="flex items-center space-x-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500"></span><span class="text-slate-600">Personal</span></span>
+                            <span class="flex items-center space-x-1.5"><span class="w-3 h-3 rounded-full bg-amber-500"></span><span class="text-slate-600">School</span></span>
+                            <span class="flex items-center space-x-1.5"><span class="w-3 h-3 rounded-full bg-blue-500"></span><span class="text-slate-600">Family</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Calendar Grid -->
+                    <div class="grid grid-cols-7 gap-px bg-slate-200 rounded-xl overflow-hidden border border-slate-200">
+                        <div class="bg-slate-50 py-2.5 text-center text-xs font-bold text-slate-500 uppercase">Sun</div>
+                        <div class="bg-slate-50 py-2.5 text-center text-xs font-bold text-slate-500 uppercase">Mon</div>
+                        <div class="bg-slate-50 py-2.5 text-center text-xs font-bold text-slate-500 uppercase">Tue</div>
+                        <div class="bg-slate-50 py-2.5 text-center text-xs font-bold text-slate-500 uppercase">Wed</div>
+                        <div class="bg-slate-50 py-2.5 text-center text-xs font-bold text-slate-500 uppercase">Thu</div>
+                        <div class="bg-slate-50 py-2.5 text-center text-xs font-bold text-slate-500 uppercase">Fri</div>
+                        <div class="bg-slate-50 py-2.5 text-center text-xs font-bold text-slate-500 uppercase">Sat</div>
+                        <div id="calendar-days" class="contents"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- MODULE 3: SETTINGS & DATA MANAGEMENT -->
+        <div id="module-settings" class="module-section hidden space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Backup & Restore -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                    <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
+                        <i class="fa-solid fa-database text-indigo-600"></i><span>Unified Data Backup & Restore</span>
+                    </h3>
+                    <p class="text-xs text-slate-500">Download a full JSON backup file containing your Budget and Task data, or restore from a previous backup file.</p>
+                    <div class="flex flex-wrap gap-3 pt-2">
+                        <button onclick="downloadMasterBackup()" class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-all flex items-center space-x-2">
+                            <i class="fa-solid fa-download"></i><span>Download Master Backup</span>
+                        </button>
+                        <label class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold px-4 py-2.5 rounded-xl cursor-pointer transition-all flex items-center space-x-2">
+                            <i class="fa-solid fa-upload"></i><span>Restore Backup</span>
+                            <input type="file" id="master-restore-input" onchange="restoreMasterBackup(event)" accept=".json" class="hidden">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Custom Task Categories -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                    <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
+                        <i class="fa-solid fa-tags text-indigo-600"></i><span>Task Custom Categories</span>
+                    </h3>
+                    <p class="text-xs text-slate-500">Add custom categories to tag your tasks.</p>
+                    <div class="flex gap-2 pt-2">
+                        <input type="text" id="new-category-input" placeholder="Category name..." class="flex-1 bg-slate-50 border border-slate-200 text-xs rounded-xl px-3 py-2 outline-none focus:border-indigo-500">
+                        <button onclick="addCustomCategory()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition-all">Add</button>
+                    </div>
+                    <div id="category-list" class="flex flex-wrap gap-2 pt-2"></div>
+                </div>
+
+                <!-- Custom Budget Categories -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4 md:col-span-2">
+                    <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
+                        <i class="fa-solid fa-list-check text-indigo-600"></i><span>Budget Custom Categories</span>
+                    </h3>
+                    <p class="text-xs text-slate-500">Add custom categories for income and expense transactions.</p>
+                    <div class="flex gap-2 max-w-md pt-2">
+                        <input type="text" id="newBudgetCategoryInput" placeholder="Category name..." class="flex-1 bg-slate-50 border border-slate-200 text-xs rounded-xl px-3 py-2 outline-none focus:border-indigo-500">
+                        <button onclick="addBudgetCategory()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition-all">Add</button>
+                    </div>
+                    <div id="budgetCategoryList" class="flex flex-wrap gap-2 pt-2"></div>
+                </div>
+
+                <!-- Danger Zone -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-rose-200 space-y-4 md:col-span-2">
+                    <h3 class="text-sm font-bold text-rose-600 flex items-center space-x-2">
+                        <i class="fa-solid fa-triangle-exclamation"></i><span>Danger Zone</span>
+                    </h3>
+                    <p class="text-xs text-slate-500">Permanently clear all saved budget transactions, savings, loans, forecasts, and tasks from this device.</p>
+                    <button onclick="clearAllDataMaster()" class="bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold px-4 py-2.5 rounded-xl transition-all border border-rose-200 flex items-center space-x-2">
+                        <i class="fa-solid fa-trash-can"></i><span>Clear All Application Data</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODULE 4: ABOUT DEVELOPER -->
+        <div id="module-about" class="module-section hidden space-y-6">
+            <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200 max-w-3xl mx-auto space-y-6">
+                <div class="flex items-center space-x-4">
+                    <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center text-2xl font-bold shadow-inner">
+                        AT
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900">Ate Tine (Kristine Aquino)</h2>
+                        <p class="text-xs text-slate-500">Digital Planner Developer & Portfolio Hub</p>
+                    </div>
+                </div>
+
+                <div class="space-y-4 text-sm text-slate-600 leading-relaxed">
+                    <p>I’m always open to discussing new projects, creative ideas, or opportunities to collaborate.</p>
+                    <p>Feel free to reach out directly at <a href="mailto:kristine.aquino2019@gmail.com" class="text-indigo-600 font-medium underline">kristine.aquino2019@gmail.com</a></p>
+                    <div class="flex flex-wrap gap-3 pt-2">
+                        <a href="https://www.linkedin.com/in/kristineaquino/" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-xl font-medium shadow text-xs flex items-center space-x-1.5">
+                            <i class="fa-brands fa-linkedin"></i><span>Connect on LinkedIn</span>
+                        </a>
+                        <a href="https://sites.google.com/view/kristinedaquino/home" target="_blank" class="border border-indigo-600 text-indigo-600 hover:bg-indigo-50 py-2 px-4 rounded-xl font-medium shadow-sm text-xs flex items-center space-x-1.5">
+                            <i class="fa-solid fa-globe"></i><span>View Google Sites Portfolio</span>
+                        </a>
+                    </div>
+                    <p class="font-semibold text-slate-900 pt-2">~ Ate Tine</p>
+                </div>
+
+                <!-- Suggestion / Report Error Section -->
+                <div class="pt-6 border-t border-slate-200 space-y-4">
+                    <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
+                        <i class="fa-solid fa-comment-dots text-indigo-600"></i><span>Found an error or have a suggestion?</span>
+                    </h3>
+                    <p class="text-xs text-slate-500">Let the creator know! Please provide your email so she can reply to you.</p>
+                    <form onsubmit="sendFeedbackEmail(event)" class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Your Email Address</label>
+                            <input type="email" id="feedback-email" required placeholder="name@example.com" class="w-full bg-slate-50 border border-slate-200 text-xs rounded-xl px-3 py-2.5 outline-none focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Message / Error Report</label>
+                            <textarea id="feedback-message" required rows="3" placeholder="Type your suggestion or error report here..." class="w-full bg-slate-50 border border-slate-200 text-xs rounded-xl px-3 py-2.5 outline-none focus:border-indigo-500"></textarea>
+                        </div>
+                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-5 py-2.5 rounded-xl shadow-sm transition-all flex items-center space-x-2">
+                            <i class="fa-solid fa-paper-plane"></i><span>Send to Ate Tine</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODALS SECTION -->
+    <!-- 1. BUDGET TRANSACTION MODAL -->
+    <div id="transactionModal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-6 rounded-2xl w-full max-w-sm space-y-3 shadow-xl text-xs">
+            <h3 class="text-base font-bold text-slate-900">Add Budget Entry</h3>
+            <input type="text" id="tTitle" placeholder="Title" class="w-full border p-2.5 rounded-xl bg-slate-50 outline-none focus:border-indigo-500">
+            <input type="number" id="tAmount" placeholder="Amount (PHP)" class="w-full border p-2.5 rounded-xl bg-slate-50 outline-none focus:border-indigo-500">
+            <select id="tType" class="w-full border p-2.5 rounded-xl bg-slate-50 outline-none focus:border-indigo-500">
+                <option value="EXPENSE">Expense</option>
+                <option value="INCOME">Income</option>
+                <option value="SAVINGS">Savings Deposit</option>
+            </select>
+            <select id="tCategory" class="w-full border p-2.5 rounded-xl bg-slate-50 outline-none focus:border-indigo-500">
+                <option value="General">General</option>
+            </select>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="closeModal('transactionModal')" class="px-4 py-2 text-slate-600 font-semibold">Cancel</button>
+                <button onclick="addTransaction()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-semibold shadow">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. BUDGET SAVINGS MODAL -->
+    <div id="savingsModal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-6 rounded-2xl w-full max-w-sm space-y-3 shadow-xl text-xs">
+            <h3 class="text-base font-bold text-slate-900">Add Bank Savings Account</h3>
+            <input type="text" id="sName" placeholder="Bank / Account Name" class="w-full border p-2.5 rounded-xl bg-slate-50 outline-none focus:border-indigo-500">
+            <input type="number" id="sInitial" placeholder="Initial Balance" class="w-full border p-2.5 rounded-xl bg-slate-50 outline-none focus:border-indigo-500">
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="closeModal('savingsModal')" class="px-4 py-2 text-slate-600 font-semibold">Cancel</button>
+                <button onclick="addSavingsAccount()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-semibold shadow">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. BUDGET LOAN MODAL -->
+    <div id="loanModal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-6 rounded-2xl w-full max-w-sm space-y-3 shadow-xl text-xs">
+            <h3 class="text-base font-bold text-slate-900">Add Loan</h3>
+            <input type="text" id="lName" placeholder="Loan Name" class="w-full border p-2.5 rounded-xl bg-slate-50 outline-none focus:border-indigo-500">
+            <input type="number" id="lAmount" placeholder="Total Amount" class="w-full border p-2.5 rounded-xl bg-slate-50 outline-none focus:border-indigo-500">
+            <select id="lType" class="w-full border p-2.5 rounded-xl bg-slate-50 outline-none focus:border-indigo-500">
+                <option value="PAYABLE">Payable (I owe)</option>
+                <option value="RECEIVABLE">Receivable (Owed to me)</option>
+            </select>
+            <input type="number" id="lMonths" placeholder="Number of Months (Terms Remaining)" class="w-full border p-2.5 rounded-xl bg-slate-50 outline-none focus:border-indigo-500">
+            <input type="number" id="lInstallment" placeholder="Installment Amount" class="w-full border p-2.5 rounded-xl bg-slate-50 outline-none focus:border-indigo-500">
+            
+            <label class="block font-bold text-slate-600 mt-2">Frequency:</label>
+            <div class="flex space-x-4">
+                <label class="text-xs"><input type="radio" name="lFreq" value="MONTHLY" checked onchange="toggleFreqFields()"> Monthly</label>
+                <label class="text-xs"><input type="radio" name="lFreq" value="SEMIMONTHLY" onchange="toggleFreqFields()"> Semi-Monthly</label>
+            </div>
+
+            <div id="monthlyDateContainer">
+                <input type="number" id="lDueDate" placeholder="Due Date (Day of month: 1-31)" min="1" max="31" class="w-full border p-2.5 rounded-xl bg-slate-50 outline-none focus:border-indigo-500 mt-1">
+            </div>
+
+            <div id="semiMonthlyDateContainer" class="hidden space-y-2 mt-1">
+                <input type="number" id="lDue1" placeholder="First Due Date (e.g. 15)" min="1" max="31" class="w-full border p-2.5 rounded-xl bg-slate-50 outline-none focus:border-indigo-500">
+                <input type="number" id="lDue2" placeholder="Second Due Date (e.g. 30)" min="1" max="31" class="w-full border p-2.5 rounded-xl bg-slate-50 outline-none focus:border-indigo-500">
+            </div>
+
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="closeModal('loanModal')" class="px-4 py-2 text-slate-600 font-semibold">Cancel</button>
+                <button onclick="addLoan()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-semibold shadow">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. BUDGET FORECAST MODAL -->
+    <div id="forecastModal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-6 rounded-2xl w-full max-w-sm space-y-3 shadow-xl text-xs">
+            <h3 class="text-base font-bold text-slate-900">Add Forecast Expense</h3>
+            <select id="fCategorySelect" onchange="handleForecastCategoryChange()" class="w-full border p-2.5 rounded-xl bg-slate-50 outline-none focus:border-indigo-500">
+                <option value="General">General Expense</option>
+                <option value="Loan">Loan</option>
+            </select>
+            <div id="loanNameContainer" class="hidden">
+                <select id="fLoanSelect" onchange="populateForecastFromLoan()" class="w-full border p-2.5 rounded-xl bg-slate-50 outline-none focus:border-indigo-500">
+                    <option value="">-- Select Loan Name --</option>
+                </select>
+            </div>
+            <input type="text" id="fTitle" placeholder="Forecast Title / Name" class="w-full border p-2.5 rounded-xl bg-slate-50 outline-none focus:border-indigo-500">
+            <input type="number" id="fAmount" placeholder="Amount (PHP)" class="w-full border p-2.5 rounded-xl bg-slate-50 outline-none focus:border-indigo-500">
+            <input type="date" id="fDate" class="w-full border p-2.5 rounded-xl bg-slate-50 outline-none focus:border-indigo-500">
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="closeModal('forecastModal')" class="px-4 py-2 text-slate-600 font-semibold">Cancel</button>
+                <button onclick="addForecast()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-semibold shadow">Add</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. TASK MODAL -->
+    <div id="task-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl shadow-xl max-w-md w-full p-6 space-y-4 my-8">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <h3 id="modal-title" class="text-sm font-bold text-slate-900">Add New Task</h3>
+                <button onclick="closeTaskModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-base"></i></button>
+            </div>
+            
+            <form id="task-form" onsubmit="handleTaskSubmit(event)" class="space-y-3.5 text-xs">
+                <input type="hidden" id="task-edit-id">
+
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Activity Name *</label>
+                    <input type="text" id="task-activity" required placeholder="e.g., Team alignment meeting" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-pink-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Date *</label>
+                        <input type="date" id="task-date" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-pink-500">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Schedule Type *</label>
+                        <select id="task-schedule-type" onchange="toggleScheduleType()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-pink-500 font-medium text-pink-600">
+                            <option value="wholeday">Whole Day (8 AM - 5 PM)</option>
+                            <option value="specific">Specific Time</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="specific-time-container" class="grid grid-cols-2 gap-3 hidden">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Start Time</label>
+                        <input type="time" id="task-start-time" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-pink-500">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">End Time</label>
+                        <input type="time" id="task-end-time" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-pink-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Category *</label>
+                        <select id="task-category" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-pink-500">
+                            <option value="WORK">WORK</option>
+                            <option value="PERSONAL">PERSONAL</option>
+                            <option value="SCHOOL">SCHOOL</option>
+                            <option value="FAMILY">FAMILY</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Urgency *</label>
+                        <select id="task-urgency" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-pink-500">
+                            <option value="URGENT">URGENT</option>
+                            <option value="NORMAL" selected>NORMAL</option>
+                            <option value="LOW">LOW</option>
+                            <option value="MEDIUM">MEDIUM</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">General Link</label>
+                        <input type="url" id="task-link" placeholder="https://..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-pink-500">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Presentation Link</label>
+                        <input type="url" id="task-pres-link" placeholder="https://canva/slides..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-pink-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Initial Status</label>
+                    <select id="task-status" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-pink-500">
+                        <option value="ON GOING">ON GOING</option>
+                        <option value="COMPLETED">COMPLETED</option>
+                        <option value="RESCHED">RESCHED</option>
+                        <option value="CANCELED">CANCELED</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Remarks</label>
+                    <textarea id="task-remarks" rows="2" placeholder="Optional notes..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-pink-500"></textarea>
+                </div>
+
+                <div class="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100">
+                    <button type="button" onclick="closeTaskModal()" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-semibold">Cancel</button>
+                    <button type="submit" class="bg-pink-600 hover:bg-pink-700 text-white font-semibold px-5 py-2 rounded-xl shadow-sm transition-all">Save Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT APPLICATION LOGIC -->
+    <script>
+        // GLOBAL DATA STORES
+        let budgetData = JSON.parse(localStorage.getItem('budgetAppV12')) || {
+            transactions: [],
+            savings: [],
+            loans: [],
+            forecasts: [],
+            categories: ['General', 'Food', 'Utilities', 'Salary', 'Loan']
+        };
+
+        let tasks = JSON.parse(localStorage.getItem('tine_tasks')) || [
+            { id: '1', activity: 'Team Retooling Workshop', date: '2026-10-30', scheduleType: 'wholeday', startTime: '08:00', endTime: '17:00', category: 'WORK', urgency: 'URGENT', link: 'https://meet.google.com', presLink: 'https://canva.com/design/sample', status: 'ON GOING', remarks: 'Prepare slides' },
+            { id: '2', activity: 'Review Student Submissions', date: '2026-10-30', scheduleType: 'specific', startTime: '13:00', endTime: '15:00', category: 'SCHOOL', urgency: 'NORMAL', link: '', presLink: '', status: 'COMPLETED', remarks: 'All graded' }
+        ];
+
+        let customCategories = JSON.parse(localStorage.getItem('tine_custom_categories')) || ['PROJECT KRAFTINE'];
+        
+        let statusChartInstance = null;
+        let budgetCharts = {};
+        let currentDate = new Date();
+
+        // INITIALIZATION
+        document.addEventListener('DOMContentLoaded', () => {
+            initFilterYearDropdowns();
+            initCustomCategoriesUI();
+            updateTodayBadge();
+            renderAllBudget();
+            renderTasks();
+            renderCalendar();
+            initTaskChart();
+        });
+
+        // NAVIGATION LOGIC
+        function switchMainModule(mod) {
+            document.querySelectorAll('.module-section').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`module-${mod}`).classList.remove('hidden');
+
+            const btns = ['budget', 'tasks', 'settings', 'about'];
+            btns.forEach(b => {
+                const btn = document.getElementById(`module-btn-${b}`);
+                if(b === mod) {
+                    btn.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-indigo-700 shadow flex items-center space-x-1.5";
+                } else {
+                    btn.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all text-indigo-100 hover:bg-indigo-700 flex items-center space-x-1.5";
+                }
+            });
+
+            document.getElementById('budget-subnav').classList.toggle('hidden', mod !== 'budget');
+            document.getElementById('tasks-subnav').classList.toggle('hidden', mod !== 'tasks');
+
+            if(mod === 'budget') updateBudgetCharts();
+            if(mod === 'tasks') { updateTaskChart(); renderCalendar(); }
+        }
+
+        function switchBudgetTab(index) {
+            document.querySelectorAll('.budget-tab-content').forEach((el, i) => {
+                el.classList.toggle('hidden', i !== index);
+            });
+            document.querySelectorAll('.budget-sub-btn').forEach((btn, i) => {
+                if(i === index) {
+                    btn.className = "budget-sub-btn bg-indigo-900 text-white px-3 py-1 rounded-lg font-semibold flex items-center space-x-1";
+                } else {
+                    btn.className = "budget-sub-btn text-indigo-200 hover:bg-indigo-700 px-3 py-1 rounded-lg font-semibold flex items-center space-x-1";
+                }
+            });
+            updateBudgetCharts();
+        }
+
+        function switchTaskTab(tabId) {
+            document.querySelectorAll('.task-tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`task-tab-${tabId}`).classList.remove('hidden');
+
+            const isTodo = tabId === 'todo';
+            document.getElementById('task-sub-todo').className = isTodo ? "task-sub-btn bg-indigo-900 text-white px-3 py-1 rounded-lg font-semibold flex items-center space-x-1" : "task-sub-btn text-indigo-200 hover:bg-indigo-700 px-3 py-1 rounded-lg font-semibold flex items-center space-x-1";
+            document.getElementById('task-sub-calendar').className = !isTodo ? "task-sub-btn bg-indigo-900 text-white px-3 py-1 rounded-lg font-semibold flex items-center space-x-1" : "task-sub-btn text-indigo-200 hover:bg-indigo-700 px-3 py-1 rounded-lg font-semibold flex items-center space-x-1";
+
+            if(tabId === 'calendar') renderCalendar();
+            if(tabId === 'todo') updateTaskChart();
+        }
+
+        function initFilterYearDropdowns() {
+            const currentYear = new Date().getFullYear();
+            let budgetYearOpts = '';
+            for(let y = 2026; y <= 2035; y++) {
+                budgetYearOpts += `<option value="${y}" ${y === currentYear ? 'selected' : ''}>${y}</option>`;
+            }
+            document.getElementById('filterYear').innerHTML = budgetYearOpts;
+
+            let taskYearOpts = '<option value="">All Years</option>';
+            for(let y = 2024; y <= 2035; y++) {
+                taskYearOpts += `<option value="${y}" ${y === currentYear ? 'selected' : ''}>${y}</option>`;
+            }
+            document.getElementById('filter-year').innerHTML = taskYearOpts;
+        }
+
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+            if(id === 'forecastModal') {
+                const select = document.getElementById('fLoanSelect');
+                select.innerHTML = '<option value="">-- Select Loan Name --</option>' + 
+                    budgetData.loans.map(l => `<option value="${l.name}">${l.name} (${formatPHP(l.installment)})</option>`).join('');
+                handleForecastCategoryChange();
+            }
+            if(id === 'transactionModal') {
+                const catSelect = document.getElementById('tCategory');
+                catSelect.innerHTML = budgetData.categories.map(c => `<option value="${c}">${c}</option>`).join('');
+            }
+        }
+
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        // BUDGET TRACKER ENGINE
+        function formatPHP(num) {
+            return '₱' + Number(num).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function saveBudgetData() {
+            localStorage.setItem('budgetAppV12', JSON.stringify(budgetData));
+            renderAllBudget();
+        }
+
+        function toggleFreqFields() {
+            const freq = document.querySelector('input[name="lFreq"]:checked').value;
+            if(freq === 'SEMIMONTHLY') {
+                document.getElementById('monthlyDateContainer').classList.add('hidden');
+                document.getElementById('semiMonthlyDateContainer').classList.remove('hidden');
+            } else {
+                document.getElementById('monthlyDateContainer').classList.remove('hidden');
+                document.getElementById('semiMonthlyDateContainer').classList.add('hidden');
+            }
+        }
+
+        function handleForecastCategoryChange() {
+            const cat = document.getElementById('fCategorySelect').value;
+            const container = document.getElementById('loanNameContainer');
+            if(cat === 'Loan') container.classList.remove('hidden');
+            else container.classList.add('hidden');
+        }
+
+        function populateForecastFromLoan() {
+            const loanName = document.getElementById('fLoanSelect').value;
+            const loan = budgetData.loans.find(l => l.name === loanName);
+            if(loan) {
+                document.getElementById('fTitle').value = loan.name;
+                document.getElementById('fAmount').value = loan.installment;
+            }
+        }
+
+        function addTransaction() {
+            const title = document.getElementById('tTitle').value;
+            const amount = parseFloat(document.getElementById('tAmount').value);
+            const type = document.getElementById('tType').value;
+            const category = document.getElementById('tCategory').value;
+            const date = new Date().toISOString().split('T');
+
+            if(title && amount > 0) {
+                if(type === 'SAVINGS') {
+                    budgetData.transactions.unshift({id: Date.now(), title: `Savings Deposit: ${title}`, amount, type: 'EXPENSE', category: 'Savings', date});
+                    if(budgetData.savings.length > 0) budgetData.savings.balance += amount;
+                } else {
+                    budgetData.transactions.unshift({id: Date.now(), title, amount, type, category, date});
+                }
+                closeModal('transactionModal');
+                saveBudgetData();
+            }
+        }
+
+        function deleteTransaction(id) { budgetData.transactions = budgetData.transactions.filter(t => t.id !== id); saveBudgetData(); }
+
+        function addSavingsAccount() {
+            const name = document.getElementById('sName').value;
+            const balance = parseFloat(document.getElementById('sInitial').value) || 0;
+            if(name) {
+                budgetData.savings.push({id: Date.now(), name, balance});
+                closeModal('savingsModal');
+                saveBudgetData();
+            }
+        }
+
+        function withdrawSavings(id) {
+            const amtStr = prompt("Enter withdrawal amount in PHP:");
+            const amt = parseFloat(amtStr);
+            const sav = budgetData.savings.find(s => s.id === id);
+            if(sav && amt > 0 && amt <= sav.balance) {
+                sav.balance -= amt;
+                budgetData.transactions.unshift({id: Date.now(), title: `Withdrawal: ${sav.name}`, amount: amt, type: 'INCOME', category: 'Savings Withdrawal', date: new Date().toISOString().split('T')});
+                saveBudgetData();
+            } else if(amt > sav?.balance) {
+                alert("Insufficient savings balance.");
+            }
+        }
+
+        function deleteSavings(id) { budgetData.savings = budgetData.savings.filter(s => s.id !== id); saveBudgetData(); }
+
+        function addLoan() {
+            const name = document.getElementById('lName').value;
+            const amount = parseFloat(document.getElementById('lAmount').value);
+            const type = document.getElementById('lType').value;
+            const months = parseInt(document.getElementById('lMonths').value) || 1;
+            const installment = parseFloat(document.getElementById('lInstallment').value) || 0;
+            const freq = document.querySelector('input[name="lFreq"]:checked').value;
+
+            if(name && amount > 0 && installment > 0) {
+                budgetData.loans.push({id: Date.now(), name, total: amount, remaining: amount, type, months, installment, freq});
+                
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                if(freq === 'MONTHLY') {
+                    const dueDay = parseInt(document.getElementById('lDueDate').value) || 10;
+                    for(let i = 0; i < months; i++) {
+                        let targetDate = new Date(today.getFullYear(), today.getMonth() + i, dueDay);
+                        targetDate.setHours(0, 0, 0, 0);
+                        if(targetDate >= today) {
+                            budgetData.forecasts.push({
+                                id: Date.now() + i,
+                                category: 'Loan',
+                                title: name,
+                                amount: installment,
+                                date: targetDate.toISOString().split('T'),
+                                checked: false
+                            });
+                        }
+                    }
+                } else {
+                    const due1 = parseInt(document.getElementById('lDue1').value) || 15;
+                    const due2 = parseInt(document.getElementById('lDue2').value) || 30;
+                    for(let i = 0; i < months; i++) {
+                        let d1 = new Date(today.getFullYear(), today.getMonth() + i, due1);
+                        let d2 = new Date(today.getFullYear(), today.getMonth() + i, due2);
+                        d1.setHours(0, 0, 0, 0);
+                        d2.setHours(0, 0, 0, 0);
+
+                        if(d1 >= today) {
+                            budgetData.forecasts.push({
+                                id: Date.now() + (i * 2),
+                                category: 'Loan',
+                                title: name,
+                                amount: installment,
+                                date: d1.toISOString().split('T'),
+                                checked: false
+                            });
+                        }
+                        if(d2 >= today) {
+                            budgetData.forecasts.push({
+                                id: Date.now() + (i * 2) + 1,
+                                category: 'Loan',
+                                title: name,
+                                amount: installment,
+                                date: d2.toISOString().split('T'),
+                                checked: false
+                            });
+                        }
+                    }
+                }
+
+                closeModal('loanModal');
+                saveBudgetData();
+            } else {
+                alert("Please fill out all required loan fields correctly.");
+            }
+        }
+
+        function deleteLoan(id) { budgetData.loans = budgetData.loans.filter(l => l.id !== id); saveBudgetData(); }
+
+        function addForecast() {
+            const category = document.getElementById('fCategorySelect').value;
+            const title = document.getElementById('fTitle').value;
+            const amount = parseFloat(document.getElementById('fAmount').value);
+            const date = document.getElementById('fDate').value || new Date().toISOString().split('T');
+            if(title && amount > 0) {
+                budgetData.forecasts.push({id: Date.now(), category, title, amount, date, checked: false});
+                closeModal('forecastModal');
+                saveBudgetData();
+            }
+        }
+
+        function toggleForecast(id) {
+            const f = budgetData.forecasts.find(x => x.id === id);
+            if(f) {
+                f.checked = !f.checked;
+                if(f.checked) {
+                    budgetData.transactions.unshift({id: Date.now(), title: `Forecast: ${f.title}`, amount: f.amount, type: 'EXPENSE', category: f.category || 'Forecasted', date: f.date});
+                    if(f.category === 'Loan') {
+                        const loan = budgetData.loans.find(l => l.name.toLowerCase() === f.title.toLowerCase());
+                        if(loan) loan.remaining = Math.max(0, loan.remaining - f.amount);
+                    }
+                }
+                saveBudgetData();
+            }
+        }
+
+        function deleteForecast(id) { budgetData.forecasts = budgetData.forecasts.filter(f => f.id !== id); saveBudgetData(); }
+
+        function addBudgetCategory() {
+            const cat = document.getElementById('newBudgetCategoryInput').value.trim();
+            if(cat && !budgetData.categories.includes(cat)) {
+                budgetData.categories.push(cat);
+                document.getElementById('newBudgetCategoryInput').value = '';
+                saveBudgetData();
+            }
+        }
+
+        function updateBudgetCharts() {
+            const income = budgetData.transactions.filter(t => t.type === 'INCOME').reduce((a, t) => a + t.amount, 0);
+            const expense = budgetData.transactions.filter(t => t.type === 'EXPENSE').reduce((a, t) => a + t.amount, 0);
+            document.getElementById('sumIncome').innerText = formatPHP(income);
+            document.getElementById('sumExpense').innerText = formatPHP(expense);
+            document.getElementById('sumNet').innerText = formatPHP(income - expense);
+
+            const createOrUpdate = (id, type, chartData, options) => {
+                const ctx = document.getElementById(id);
+                if(!ctx) return;
+                if(budgetCharts[id]) budgetCharts[id].destroy();
+                budgetCharts[id] = new Chart(ctx.getContext('2d'), { type, data: chartData, options: { responsive: true, ...options } });
+            };
+
+            const ieData = { labels: ['Income', 'Expenses'], datasets: [{ data: [income, expense], backgroundColor: ['#10B981', '#EF4444'] }] };
+            const loanData = { labels: budgetData.loans.map(l => l.name), datasets: [{ label: 'Remaining', data: budgetData.loans.map(l => l.remaining), backgroundColor: '#F97316' }] };
+            const savData = { labels: budgetData.savings.map(s => s.name), datasets: [{ label: 'Balance', data: budgetData.savings.map(s => s.balance), backgroundColor: '#3B82F6' }] };
+
+            ['budgetIEChart', 'summaryIEChart'].forEach(id => createOrUpdate(id, 'bar', ieData, { plugins: { legend: { display: false }, title: { display: true, text: 'Income vs Expense' } } }));
+            ['budgetLoanChart', 'loansPageChart', 'summaryLoanChart'].forEach(id => createOrUpdate(id, 'bar', loanData, { plugins: { title: { display: true, text: 'Remaining Loans' } } }));
+            ['budgetSavingsChart', 'savingsPageChart', 'summarySavingsChart'].forEach(id => createOrUpdate(id, 'bar', savData, { plugins: { legend: { display: false }, title: { display: true, text: 'Savings Balances' } } }));
+        }
+
+        function exportBudgetCSV() {
+            let csv = "--- TRANSACTIONS ---\nType,Title,Amount (PHP),Category,Date\n";
+            budgetData.transactions.forEach(t => {
+                csv += `${t.type},"${t.title}",${t.amount},"${t.category}",${t.date}\n`;
+            });
+
+            csv += "\n--- SAVINGS ACCOUNTS ---\nAccount Name,Balance (PHP)\n";
+            budgetData.savings.forEach(s => {
+                csv += `"${s.name}",${s.balance}\n`;
+            });
+
+            csv += "\n--- LOANS ---\nLoan Name,Type,Total Amount,Remaining Balance,Installment,Frequency,Months\n";
+            budgetData.loans.forEach(l => {
+                csv += `"${l.name}",${l.type},${l.total},${l.remaining},${l.installment},${l.freq},${l.months}\n`;
+            });
+
+            csv += "\n--- FORECASTS ---\nCategory,Title,Amount (PHP),Due Date,Checked\n";
+            budgetData.forecasts.forEach(f => {
+                csv += `"${f.category}","${f.title}",${f.amount},${f.date},${f.checked}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'complete_budget_tracker_export.csv'; a.click();
+        }
+
+        function renderAllBudget() {
+            document.getElementById('transactionList').innerHTML = budgetData.transactions.map(t => `
+                <div class="bg-slate-50 p-3 rounded-xl flex justify-between items-center text-xs">
+                    <div><b class="text-slate-800">${escapeHtml(t.title)}</b><div class="text-[10px] text-slate-500">${t.category} • ${t.date}</div></div>
+                    <div class="flex items-center space-x-2">
+                        <span class="font-bold ${t.type === 'INCOME' ? 'text-emerald-600' : 'text-rose-600'}">${t.type === 'INCOME' ? '+' : '-'}${formatPHP(t.amount)}</span>
+                        <button onclick="deleteTransaction(${t.id})" class="text-rose-500 hover:text-rose-700"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('') || '<p class="text-xs text-slate-400 text-center py-2">No transactions recorded yet.</p>';
+
+            document.getElementById('savingsList').innerHTML = budgetData.savings.map(s => `
+                <div class="bg-slate-50 p-3 rounded-xl flex justify-between items-center text-xs">
+                    <div><b class="text-slate-800">${escapeHtml(s.name)}</b><div class="text-[10px] text-slate-500">Balance: ${formatPHP(s.balance)}</div></div>
+                    <div class="flex space-x-2">
+                        <button onclick="withdrawSavings(${s.id})" class="bg-amber-100 text-amber-800 px-2.5 py-1 rounded-lg text-[10px] font-semibold">Withdraw</button>
+                        <button onclick="deleteSavings(${s.id})" class="text-rose-500 hover:text-rose-700"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('') || '<p class="text-xs text-slate-400 text-center py-2">No savings accounts added.</p>';
+
+            const savingsHistory = budgetData.transactions.filter(t => t.category === 'Savings' || t.category === 'Savings Withdrawal');
+            document.getElementById('savingsHistoryTable').innerHTML = savingsHistory.map(sh => `
+                <tr class="border-b border-slate-100">
+                    <td class="py-2.5 text-slate-500">${sh.date}</td>
+                    <td class="py-2.5 font-medium text-slate-800">${escapeHtml(sh.title)}</td>
+                    <td class="py-2.5 text-right font-bold ${sh.type === 'INCOME' ? 'text-emerald-600' : 'text-indigo-600'}">${sh.type === 'INCOME' ? '+' : '-'}${formatPHP(sh.amount)}</td>
+                </tr>
+            `).join('') || '<tr><td colspan="3" class="py-4 text-center text-slate-400">No savings history recorded yet.</td></tr>';
+
+            document.getElementById('loanList').innerHTML = budgetData.loans.map(l => `
+                <div class="bg-slate-50 p-3 rounded-xl flex justify-between items-center text-xs">
+                    <div><b class="text-slate-800">${l.type}: ${escapeHtml(l.name)}</b><div class="text-[10px] text-slate-500">Remaining: ${formatPHP(l.remaining)} / Total: ${formatPHP(l.total)} | Installment: ${formatPHP(l.installment)} (${l.freq})</div></div>
+                    <button onclick="deleteLoan(${l.id})" class="text-rose-500 hover:text-rose-700"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `).join('') || '<p class="text-xs text-slate-400 text-center py-2">No loans recorded.</p>';
+
+            const loanPayments = budgetData.forecasts.filter(f => f.checked && f.category === 'Loan');
+            document.getElementById('loanPaymentHistoryTable').innerHTML = loanPayments.map(lp => `
+                <tr class="border-b border-slate-100">
+                    <td class="py-2.5 text-slate-500">${lp.date}</td>
+                    <td class="py-2.5 font-medium text-slate-800">${escapeHtml(lp.title)}</td>
+                    <td class="py-2.5 text-right font-bold text-rose-600">-${formatPHP(lp.amount)}</td>
+                </tr>
+            `).join('') || '<tr><td colspan="3" class="py-4 text-center text-slate-400">No loan payments checked off yet.</td></tr>';
+
+            const fMonth = document.getElementById('filterMonth').value;
+            const fYear = document.getElementById('filterYear').value;
+            let filteredForecasts = [...budgetData.forecasts];
+            
+            if(fMonth !== 'ALL') {
+                filteredForecasts = filteredForecasts.filter(f => f.date && f.date.startsWith(`${fYear}-${fMonth}`));
+            } else {
+                filteredForecasts = filteredForecasts.filter(f => f.date && f.date.startsWith(`${fYear}`));
+            }
+
+            filteredForecasts.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            let groupedForecasts = {};
+            filteredForecasts.forEach(f => {
+                const parts = f.date ? f.date.split('-') : ['2026', '01', '01'];
+                const yearMonthKey = `${parts}-${parts[4]}`;
+                if(!groupedForecasts[yearMonthKey]) {
+                    groupedForecasts[yearMonthKey] = {
+                        title: `${monthNames[parseInt(parts[4], 10) - 1]} ${parts}`,
+                        items: []
+                    };
+                }
+                groupedForecasts[yearMonthKey].items.push(f);
+            });
+
+            let forecastHtml = '';
+            for(let key in groupedForecasts) {
+                const group = groupedForecasts[key];
+                forecastHtml += `
+                    <div class="space-y-2">
+                        <div class="bg-indigo-50 text-indigo-700 font-bold px-3 py-1 rounded-lg text-[10px] uppercase tracking-wider border-l-4 border-indigo-600">
+                            ${group.title}
+                        </div>
+                `;
+                group.items.forEach(f => {
+                    forecastHtml += `
+                        <div class="flex items-center justify-between text-xs bg-slate-50 p-2.5 rounded-xl ml-2">
+                            <label class="flex items-center space-x-2 cursor-pointer flex-1">
+                                <input type="checkbox" ${f.checked ? 'checked' : ''} onchange="toggleForecast(${f.id})" class="accent-indigo-600">
+                                <span class="${f.checked ? 'line-through text-slate-400' : 'font-bold text-slate-800'}">[${f.category || 'General'}] ${escapeHtml(f.title)} (${formatPHP(f.amount)}) - ${f.date}</span>
+                            </label>
+                            <button onclick="deleteForecast(${f.id})" class="text-rose-500 hover:text-rose-700"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    `;
+                });
+                forecastHtml += `</div>`;
+            }
+
+            document.getElementById('forecastList').innerHTML = forecastHtml || '<p class="text-xs text-slate-400 text-center py-2">No forecasts for selected period.</p>';
+            
+            document.getElementById('budgetCategoryList').innerHTML = budgetData.categories.map(c => `
+                <span class="bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-xl text-xs font-medium">${escapeHtml(c)}</span>
+            `).join('');
+
+            updateBudgetCharts();
+        }
+
+        // TASK MANAGER ENGINE
+        function updateTodayBadge() {
+            const badge = document.getElementById('today-date-badge');
+            const options = { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'Asia/Manila' };
+            badge.innerText = new Date().toLocaleDateString('en-US', options);
+        }
+
+        function toggleScheduleType() {
+            const type = document.getElementById('task-schedule-type').value;
+            const container = document.getElementById('specific-time-container');
+            if(type === 'wholeday') container.classList.add('hidden');
+            else container.classList.remove('hidden');
+        }
+
+        function openTaskModal(editId = null) {
+            const modal = document.getElementById('task-modal');
+            const form = document.getElementById('task-form');
+            form.reset();
+            document.getElementById('task-edit-id').value = '';
+            document.getElementById('modal-title').innerText = 'Add New Task';
+            document.getElementById('task-date').value = new Date().toISOString().split('T');
+            document.getElementById('task-schedule-type').value = 'wholeday';
+            toggleScheduleType();
+
+            if(editId) {
+                const task = tasks.find(t => t.id === editId);
+                if(task) {
+                    document.getElementById('modal-title').innerText = 'Edit Task';
+                    document.getElementById('task-edit-id').value = task.id;
+                    document.getElementById('task-activity').value = task.activity;
+                    document.getElementById('task-date').value = task.date;
+                    document.getElementById('task-schedule-type').value = task.scheduleType || 'wholeday';
+                    toggleScheduleType();
+                    document.getElementById('task-start-time').value = task.startTime || '';
+                    document.getElementById('task-end-time').value = task.endTime || '';
+                    document.getElementById('task-category').value = task.category;
+                    document.getElementById('task-urgency').value = task.urgency;
+                    document.getElementById('task-link').value = task.link || '';
+                    document.getElementById('task-pres-link').value = task.presLink || '';
+                    document.getElementById('task-status').value = task.status;
+                    document.getElementById('task-remarks').value = task.remarks || '';
+                }
+            }
+            modal.classList.remove('hidden');
+        }
+
+        function closeTaskModal() {
+            document.getElementById('task-modal').classList.add('hidden');
+        }
+
+        function handleTaskSubmit(e) {
+            e.preventDefault();
+            const editId = document.getElementById('task-edit-id').value;
+            const scheduleType = document.getElementById('task-schedule-type').value;
+            
+            const taskData = {
+                id: editId ? editId : Date.now().toString(),
+                activity: document.getElementById('task-activity').value,
+                date: document.getElementById('task-date').value,
+                scheduleType: scheduleType,
+                startTime: scheduleType === 'wholeday' ? '08:00' : document.getElementById('task-start-time').value,
+                endTime: scheduleType === 'wholeday' ? '17:00' : document.getElementById('task-end-time').value,
+                category: document.getElementById('task-category').value,
+                urgency: document.getElementById('task-urgency').value,
+                link: document.getElementById('task-link').value,
+                presLink: document.getElementById('task-pres-link').value,
+                status: document.getElementById('task-status').value,
+                remarks: document.getElementById('task-remarks').value
+            };
+
+            if(editId) {
+                const index = tasks.findIndex(t => t.id === editId);
+                if(index !== -1) tasks[index] = taskData;
+            } else {
+                tasks.push(taskData);
+            }
+
+            saveAndRefreshTasks();
+            closeTaskModal();
+        }
+
+        function deleteTask(id) {
+            if(confirm('Are you sure you want to delete this task?')) {
+                tasks = tasks.filter(t => t.id !== id);
+                saveAndRefreshTasks();
+            }
+        }
+
+        function updateRemarks(id, newRemarks) {
+            const task = tasks.find(t => t.id === id);
+            if(task) {
+                task.remarks = newRemarks;
+                localStorage.setItem('tine_tasks', JSON.stringify(tasks));
+            }
+        }
+
+        function updateStatus(id, newStatus) {
+            const task = tasks.find(t => t.id === id);
+            if(task) {
+                task.status = newStatus;
+                saveAndRefreshTasks();
+            }
+        }
+
+        function saveAndRefreshTasks() {
+            localStorage.setItem('tine_tasks', JSON.stringify(tasks));
+            renderTasks();
+            renderCalendar();
+            updateTaskChart();
+        }
+
+        function renderTasks() {
+            const tbody = document.getElementById('task-table-body');
+            const search = document.getElementById('search-tasks').value.toLowerCase();
+            const filterView = document.getElementById('filter-view').value;
+            const filterMonth = document.getElementById('filter-month').value;
+            const filterYear = document.getElementById('filter-year').value;
+            const todayStr = new Date().toISOString().split('T');
+
+            let filtered = tasks.filter(t => {
+                if(filterView === 'today' && t.date !== todayStr) return false;
+                if(filterMonth && t.date.substring(5, 7) !== filterMonth) return false;
+                if(filterYear && t.date.substring(0, 4) !== filterYear) return false;
+                if(search && !t.activity.toLowerCase().includes(search) && !t.category.toLowerCase().includes(search)) return false;
+                return true;
+            });
+
+            filtered.sort((a, b) => new Date(`${a.date}T${a.startTime || '00:00'}`) - new Date(`${b.date}T${b.startTime || '00:00'}`));
+
+            document.getElementById('task-count-badge').innerText = `${filtered.length} tasks`;
+
+            const todayTasks = tasks.filter(t => t.date === todayStr);
+            document.getElementById('stat-completed').innerText = todayTasks.filter(t => t.status === 'COMPLETED').length;
+            document.getElementById('stat-ongoing').innerText = todayTasks.filter(t => t.status === 'ON GOING').length;
+            document.getElementById('stat-resched').innerText = todayTasks.filter(t => t.status === 'RESCHED').length;
+            document.getElementById('stat-canceled').innerText = todayTasks.filter(t => t.status === 'CANCELED').length;
+
+            if(filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center py-8 text-slate-400">No tasks found.</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            filtered.forEach(t => {
+                const statusColor = t.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                    t.status === 'ON GOING' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                    t.status === 'RESCHED' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-rose-50 text-rose-700 border-rose-200';
+                
+                const urgencyColor = t.urgency === 'URGENT' ? 'text-rose-600 bg-rose-50 border-rose-200' :
+                                     t.urgency === 'MEDIUM' ? 'text-amber-600 bg-amber-50 border-amber-200' : 'text-slate-600 bg-slate-100 border-slate-200';
+
+                const timeDisplay = t.scheduleType === 'wholeday' ? 'Whole Day (8 AM - 5 PM)' : `${t.startTime || ''} - ${t.endTime || ''}`;
+
+                html += `
+                    <tr class="hover:bg-slate-50/80 transition-all">
+                        <td class="py-3 px-4">
+                            <select onchange="updateStatus('${t.id}', this.value)" class="text-[11px] font-semibold rounded-lg px-2 py-1 border ${statusColor} outline-none cursor-pointer">
+                                <option value="ON GOING" ${t.status === 'ON GOING' ? 'selected' : ''}>ON GOING</option>
+                                <option value="COMPLETED" ${t.status === 'COMPLETED' ? 'selected' : ''}>COMPLETED</option>
+                                <option value="RESCHED" ${t.status === 'RESCHED' ? 'selected' : ''}>RESCHED</option>
+                                <option value="CANCELED" ${t.status === 'CANCELED' ? 'selected' : ''}>CANCELED</option>
+                            </select>
+                        </td>
+                        <td class="py-3 px-4 font-semibold">
+                            <span class="px-2 py-0.5 rounded border text-[10px] ${urgencyColor}">${t.urgency}</span>
+                        </td>
+                        <td class="py-3 px-4 font-semibold text-slate-900">${escapeHtml(t.activity)}</td>
+                        <td class="py-3 px-4 text-slate-500 whitespace-nowrap">${t.date}<br><span class="text-[10px] font-medium text-pink-600">${timeDisplay}</span></td>
+                        <td class="py-3 px-4"><span class="bg-slate-100 text-slate-700 font-medium px-2 py-0.5 rounded text-[10px]">${t.category}</span></td>
+                        <td class="py-3 px-4 whitespace-nowrap">
+                            ${t.link ? `<a href="${t.link}" target="_blank" class="text-pink-600 hover:text-pink-700 font-medium underline"><i class="fa-solid fa-link"></i> Link</a>` : '<span class="text-slate-300">-</span>'}
+                        </td>
+                        <td class="py-3 px-4 whitespace-nowrap">
+                            ${t.presLink ? `<a href="${t.presLink}" target="_blank" class="text-indigo-600 hover:text-indigo-700 font-medium underline"><i class="fa-solid fa-person-chalkboard"></i> Presentation</a>` : '<span class="text-slate-300">-</span>'}
+                        </td>
+                        <td class="py-3 px-4">
+                            <input type="text" value="${escapeHtml(t.remarks || '')}" onblur="updateRemarks('${t.id}', this.value)" placeholder="Add remarks..." class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs outline-none focus:border-pink-500">
+                        </td>
+                        <td class="py-3 px-4 text-right space-x-1 whitespace-nowrap">
+                            <button onclick="openTaskModal('${t.id}')" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all" title="Edit"><i class="fa-solid fa-pen text-xs"></i></button>
+                            <button onclick="deleteTask('${t.id}')" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition-all" title="Delete"><i class="fa-solid fa-trash text-xs"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            document.getElementById('cal-month-year').innerText = `${monthNames[month]} ${year}`;
+
+            const firstDayIndex = new Date(year, month, 1).getDay();
+            const lastDay = new Date(year, month + 1, 0).getDate();
+            const prevLastDay = new Date(year, month, 0).getDate();
+            const todayStr = new Date().toISOString().split('T');
+
+            let daysHtml = '';
+
+            for(let i = firstDayIndex; i > 0; i--) {
+                const dayNum = prevLastDay - i + 1;
+                daysHtml += `<div class="bg-slate-50/50 min-h-[90px] p-2 text-slate-300 text-xs border border-slate-100"><span>${dayNum}</span></div>`;
+            }
+
+            for(let day = 1; day <= lastDay; day++) {
+                const monthStr = String(month + 1).padStart(2, '0');
+                const dayStr = String(day).padStart(2, '0');
+                const dateString = `${year}-${monthStr}-${dayStr}`;
+                const isToday = dateString === todayStr;
+
+                const dayTasks = tasks.filter(t => t.date === dateString);
+
+                let taskPills = '';
+                dayTasks.forEach(t => {
+                    const colorBg = t.category === 'WORK' ? 'bg-pink-500 text-white' :
+                                    t.category === 'PERSONAL' ? 'bg-emerald-500 text-white' :
+                                    t.category === 'SCHOOL' ? 'bg-amber-500 text-white' : 'bg-blue-500 text-white';
+                    taskPills += `<div class="text-[10px] px-1.5 py-0.5 rounded truncate ${colorBg} font-medium mt-1" title="${escapeHtml(t.activity)}">${escapeHtml(t.activity)}</div>`;
+                });
+
+                daysHtml += `
+                    <div class="bg-white min-h-[90px] p-2 text-xs border border-slate-100 flex flex-col justify-between ${isToday ? 'bg-pink-50/40 ring-1 ring-pink-500' : ''}">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold ${isToday ? 'bg-pink-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px]' : 'text-slate-700'}">${day}</span>
+                            ${dayTasks.length > 0 ? `<span class="text-[9px] bg-slate-100 text-slate-600 px-1 rounded">${dayTasks.length}</span>` : ''}
+                        </div>
+                        <div class="overflow-y-auto max-h-20 space-y-0.5 mt-1">
+                            ${taskPills}
+                        </div>
+                    </div>
+                `;
+            }
+
+            document.getElementById('calendar-days').innerHTML = daysHtml;
+        }
+
+        function changeMonth(direction) {
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            renderCalendar();
+        }
+
+        function goToCurrentMonth() {
+            currentDate = new Date();
+            renderCalendar();
+        }
+
+        function initTaskChart() {
+            const ctx = document.getElementById('statusChart').getContext('2d');
+            const todayStr = new Date().toISOString().split('T');
+            const todayTasks = tasks.filter(t => t.date === todayStr);
+
+            const counts = {
+                COMPLETED: todayTasks.filter(t => t.status === 'COMPLETED').length,
+                ON_GOING: todayTasks.filter(t => t.status === 'ON GOING').length,
+                RESCHED: todayTasks.filter(t => t.status === 'RESCHED').length,
+                CANCELED: todayTasks.filter(t => t.status === 'CANCELED').length
+            };
+
+            statusChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Completed', 'On Going', 'Rescheduled', 'Canceled'],
+                    datasets: [{
+                        data: [counts.COMPLETED, counts.ON_GOING, counts.RESCHED, counts.CANCELED],
+                        backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#f43f5e'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+
+        function updateTaskChart() {
+            if(!statusChartInstance) return;
+            const todayStr = new Date().toISOString().split('T');
+            const todayTasks = tasks.filter(t => t.date === todayStr);
+
+            statusChartInstance.data.datasets.data = [
+                todayTasks.filter(t => t.status === 'COMPLETED').length,
+                todayTasks.filter(t => t.status === 'ON GOING').length,
+                todayTasks.filter(t => t.status === 'RESCHED').length,
+                todayTasks.filter(t => t.status === 'CANCELED').length
+            ];
+            statusChartInstance.update();
+        }
+
+        function exportTasksToExcel() {
+            let csv = 'Status,Urgency,Activity,Date,Time,Category,Link,Presentation Link,Remarks\r\n';
+            tasks.forEach(t => {
+                const row = [
+                    `"${t.status}"`,
+                    `"${t.urgency}"`,
+                    `"${(t.activity || '').replace(/"/g, '""')}"`,
+                    `"${t.date}"`,
+                    `"${t.scheduleType === 'wholeday' ? 'Whole Day (8 AM - 5 PM)' : (t.startTime + ' - ' + t.endTime)}"`,
+                    `"${t.category}"`,
+                    `"${t.link || ''}"`,
+                    `"${t.presLink || ''}"`,
+                    `"${(t.remarks || '').replace(/"/g, '""')}"`
+                ];
+                csv += row.join(',') + '\r\n';
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('href', url);
+            a.setAttribute('download', `digital_planner_tasks_export_${new Date().toISOString().split('T')}.csv`);
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        // UNIFIED SETTINGS & MASTER BACKUP
+        function addCustomCategory() {
+            const input = document.getElementById('new-category-input');
+            const val = input.value.trim().toUpperCase();
+            if(val && !customCategories.includes(val)) {
+                customCategories.push(val);
+                localStorage.setItem('tine_custom_categories', JSON.stringify(customCategories));
+                input.value = '';
+                initCustomCategoriesUI();
+            }
+        }
+
+        function removeCustomCategory(cat) {
+            customCategories = customCategories.filter(c => c !== cat);
+            localStorage.setItem('tine_custom_categories', JSON.stringify(customCategories));
+            initCustomCategoriesUI();
+        }
+
+        function initCustomCategoriesUI() {
+            const listEl = document.getElementById('category-list');
+            const selectEl = document.getElementById('task-category');
+            
+            let defaultCats = ['WORK', 'PERSONAL', 'SCHOOL', 'FAMILY'];
+            let allCats = [...defaultCats, ...customCategories];
+
+            let selectHtml = '';
+            allCats.forEach(c => {
+                selectHtml += `<option value="${c}">${c}</option>`;
+            });
+            selectEl.innerHTML = selectHtml;
+
+            let badgesHtml = '';
+            customCategories.forEach(c => {
+                badgesHtml += `
+                    <span class="inline-flex items-center space-x-1.5 bg-slate-100 text-slate-700 text-xs px-3 py-1 rounded-xl font-medium">
+                        <span>${escapeHtml(c)}</span>
+                        <button onclick="removeCustomCategory('${c}')" class="text-slate-400 hover:text-rose-600"><i class="fa-solid fa-xmark text-xs"></i></button>
+                    </span>
+                `;
+            });
+            listEl.innerHTML = badgesHtml || '<span class="text-xs text-slate-400">No custom categories added yet.</span>';
+        }
+
+        function downloadMasterBackup() {
+            const masterObj = {
+                version: "DigitalPlannerV1",
+                timestamp: new Date().toISOString(),
+                budgetAppV12: budgetData,
+                tine_tasks: tasks,
+                tine_custom_categories: customCategories
+            };
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(masterObj, null, 2));
+            const a = document.createElement('a');
+            a.setAttribute("href", dataStr);
+            a.setAttribute("download", `digital_planner_master_backup_${new Date().toISOString().split('T')}.json`);
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        }
+
+        function restoreMasterBackup(event) {
+            const file = event.target.files;
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if(parsed.budgetAppV12 && parsed.tine_tasks) {
+                        budgetData = parsed.budgetAppV12;
+                        tasks = parsed.tine_tasks;
+                        if(parsed.tine_custom_categories) customCategories = parsed.tine_custom_categories;
+                        
+                        localStorage.setItem('budgetAppV12', JSON.stringify(budgetData));
+                        localStorage.setItem('tine_tasks', JSON.stringify(tasks));
+                        localStorage.setItem('tine_custom_categories', JSON.stringify(customCategories));
+                        
+                        renderAllBudget();
+                        saveAndRefreshTasks();
+                        initCustomCategoriesUI();
+                        alert('Digital Planner master backup restored successfully!');
+                    } else if(parsed.transactions) {
+                        budgetData = parsed;
+                        localStorage.setItem('budgetAppV12', JSON.stringify(budgetData));
+                        renderAllBudget();
+                        alert('Budget data restored successfully!');
+                    } else if(Array.isArray(parsed)) {
+                        tasks = parsed;
+                        localStorage.setItem('tine_tasks', JSON.stringify(tasks));
+                        saveAndRefreshTasks();
+                        alert('Task data restored successfully!');
+                    } else {
+                        alert('Invalid JSON backup file format.');
+                    }
+                } catch(err) {
+                    alert('Error reading backup file.');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function clearAllDataMaster() {
+            if(confirm('DANGER: This will permanently delete ALL budget and task data. Are you sure?')) {
+                budgetData = { transactions: [], savings: [], loans: [], forecasts: [], categories: ['General', 'Food', 'Utilities', 'Salary', 'Loan'] };
+                tasks = [];
+                customCategories = ['PROJECT KRAFTINE'];
+                
+                localStorage.setItem('budgetAppV12', JSON.stringify(budgetData));
+                localStorage.setItem('tine_tasks', JSON.stringify(tasks));
+                localStorage.setItem('tine_custom_categories', JSON.stringify(customCategories));
+
+                renderAllBudget();
+                saveAndRefreshTasks();
+                initCustomCategoriesUI();
+                alert('All application data cleared.');
+            }
+        }
+
+        function sendFeedbackEmail(e) {
+            e.preventDefault();
+            const email = document.getElementById('feedback-email').value;
+            const message = document.getElementById('feedback-message').value;
+            
+            const subject = encodeURIComponent("Digital Planner Suggestion / Error Report");
+            const body = encodeURIComponent(`From: ${email}\n\nMessage:\n${message}`);
+            
+            window.location.href = `mailto:kristine.aquino2019@gmail.com?subject=${subject}&body=${body}`;
+        }
+
+        function escapeHtml(str) {
+            if(!str) return '';
+            return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>

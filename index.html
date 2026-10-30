@@ -53,6 +53,21 @@
                     <i class="fa-solid fa-plus"></i><span>Add Entry</span>
                 </button>
             </div>
+            <!-- Budget Month & Year Filter -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex space-x-3">
+                <select id="budgetFilterMonth" onchange="renderAll()" class="w-1/2 border border-gray-200 bg-gray-50 p-2.5 rounded-xl text-xs outline-none focus:border-indigo-500 font-semibold">
+                    <option value="ALL">All Months</option>
+                    <option value="01">January</option><option value="02">February</option><option value="03">March</option>
+                    <option value="04">April</option><option value="05">May</option><option value="06">June</option>
+                    <option value="07">July</option><option value="08">August</option><option value="09">September</option>
+                    <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+                </select>
+                <select id="budgetFilterYear" onchange="renderAll()" class="w-1/2 border border-gray-200 bg-gray-50 p-2.5 rounded-xl text-xs outline-none focus:border-indigo-500 font-semibold">
+                    <option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option>
+                    <option value="2029">2029</option><option value="2030">2030</option><option value="2031">2031</option>
+                    <option value="2032">2032</option><option value="2033">2033</option><option value="2034">2034</option><option value="2035">2035</option>
+                </select>
+            </div>
             <!-- Visualizations -->
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 space-y-4">
                 <h3 class="font-bold text-gray-700 text-sm">Visualizations (Income, Expense & Forecast)</h3>
@@ -88,6 +103,14 @@
                 <button onclick="openModal('savingsModal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded-xl text-xs font-semibold shadow transition-all flex items-center space-x-1.5">
                     <i class="fa-solid fa-plus"></i><span>Add Bank Savings</span>
                 </button>
+            </div>
+            <!-- Total Savings Summary Card -->
+            <div class="bg-indigo-50 border border-indigo-200 p-4 rounded-2xl flex items-center justify-between shadow-sm">
+                <div>
+                    <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider">Total Savings Balance</span>
+                    <h3 id="total-savings-display" class="text-2xl font-bold text-indigo-900 mt-1">₱0.00</h3>
+                </div>
+                <div class="p-3 bg-indigo-600 text-white rounded-xl shadow-sm"><i class="fa-solid fa-piggy-bank text-lg"></i></div>
             </div>
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
                 <div class="w-full max-w-md mx-auto"><canvas id="savingsPageChart"></canvas></div>
@@ -134,6 +157,14 @@
                 <button onclick="openModal('loanModal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded-xl text-xs font-semibold shadow transition-all flex items-center space-x-1.5">
                     <i class="fa-solid fa-plus"></i><span>Add Loan</span>
                 </button>
+            </div>
+            <!-- Total Remaining Loan Summary Card -->
+            <div class="bg-rose-50 border border-rose-200 p-4 rounded-2xl flex items-center justify-between shadow-sm">
+                <div>
+                    <span class="text-xs font-bold text-rose-600 uppercase tracking-wider">Total Remaining Loan Balance</span>
+                    <h3 id="total-loan-display" class="text-2xl font-bold text-rose-900 mt-1">₱0.00</h3>
+                </div>
+                <div class="p-3 bg-rose-600 text-white rounded-xl shadow-sm"><i class="fa-solid fa-hand-holding-usd text-lg"></i></div>
             </div>
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
                 <div class="w-full max-w-md mx-auto"><canvas id="loansPageChart"></canvas></div>
@@ -831,6 +862,15 @@
             }
         }
 
+        function getFilteredBudgetTransactions() {
+            const bMonth = document.getElementById('budgetFilterMonth').value;
+            const bYear = document.getElementById('budgetFilterYear').value;
+            let txns = [...data.transactions];
+            if(bMonth !== 'ALL') txns = txns.filter(t => t.date && t.date.startsWith(`${bYear}-${bMonth}`));
+            else txns = txns.filter(t => t.date && t.date.startsWith(`${bYear}`));
+            return txns;
+        }
+
         function updateCharts() {
             const createOrUpdate = (id, type, chartData, options) => {
                 const ctx = document.getElementById(id);
@@ -839,8 +879,9 @@
                 charts[id] = new Chart(ctx.getContext('2d'), { type, data: chartData, options: { responsive: true, ...options } });
             };
 
-            const income = data.transactions.filter(t => t.type.startsWith('INCOME')).reduce((a, t) => a + t.amount, 0);
-            const expense = data.transactions.filter(t => t.type.startsWith('EXPENSE')).reduce((a, t) => a + t.amount, 0);
+            const filteredTxns = getFilteredBudgetTransactions();
+            const income = filteredTxns.filter(t => t.type.startsWith('INCOME')).reduce((a, t) => a + t.amount, 0);
+            const expense = filteredTxns.filter(t => t.type.startsWith('EXPENSE')).reduce((a, t) => a + t.amount, 0);
             const totalForecast = data.forecasts.filter(f => f.status === 'FORECASTED' && f.type === 'EXPENSE').reduce((a, f) => a + f.amount, 0);
 
             const ieForecastData = { labels: ['Income', 'Expense', 'Forecasted'], datasets: [{ label: 'Amount (PHP)', data: [income, expense, totalForecast], backgroundColor: ['#10B981', '#EF4444', '#F59E0B'] }] };
@@ -848,8 +889,8 @@
             const savData = { labels: data.savings.map(s => s.name), datasets: [{ label: 'Balance', data: data.savings.map(s => s.balance), backgroundColor: '#3B82F6' }] };
 
             createOrUpdate('budgetIEChart', 'bar', ieForecastData, { plugins: { legend: { display: false }, title: { display: true, text: 'Income, Expense & Forecast Overview' } } });
-            ['budgetLoanChart', 'loansPageChart'].forEach(id => createOrUpdate(id, 'bar', loanData, { plugins: { title: { display: true, text: 'Remaining Loans' } } }));
-            ['budgetSavingsChart', 'savingsPageChart'].forEach(id => createOrUpdate(id, 'bar', savData, { plugins: { legend: { display: false }, title: { display: true, text: 'Savings Balances' } } }));
+            createOrUpdate('budgetLoanChart', 'bar', loanData, { plugins: { title: { display: true, text: 'Remaining Loans' } } });
+            createOrUpdate('budgetSavingsChart', 'bar', savData, { plugins: { legend: { display: false }, title: { display: true, text: 'Savings Balances' } } });
         }
 
         function exportToExcelWithCharts() {
@@ -861,7 +902,9 @@
         }
 
         function renderAll() {
-            document.getElementById('transactionTableBody').innerHTML = data.transactions.map(t => `
+            // Render Budget Transactions based on filter
+            const filteredTxns = getFilteredBudgetTransactions();
+            document.getElementById('transactionTableBody').innerHTML = filteredTxns.map(t => `
                 <tr class="border-b hover:bg-gray-50">
                     <td class="p-2">${t.date}</td>
                     <td class="p-2 font-medium">${t.title}</td>
@@ -870,7 +913,11 @@
                     <td class="p-2"><span class="px-1.5 py-0.5 rounded text-[10px] ${t.type.startsWith('INCOME') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${t.type}</span></td>
                     <td class="p-2 text-center"><button onclick="deleteTransaction(${t.id})" class="text-red-500"><i class="fas fa-trash"></i></button></td>
                 </tr>
-            `).join('') || '<tr><td colspan="6" class="p-3 text-center text-gray-400">No transactions recorded.</td></tr>';
+            `).join('') || '<tr><td colspan="6" class="p-3 text-center text-gray-400">No transactions recorded for selected period.</td></tr>';
+
+            // Render Savings & Total Savings
+            const totalSavings = data.savings.reduce((acc, s) => acc + s.balance, 0);
+            document.getElementById('total-savings-display').innerText = formatPHP(totalSavings);
 
             document.getElementById('bankSavingsTableBody').innerHTML = data.savings.map(s => `
                 <tr class="border-b hover:bg-gray-50">
@@ -887,6 +934,10 @@
             document.getElementById('savingsHistoryTable').innerHTML = data.transactions.filter(t => t.category === 'SAVINGS').map(sh => `
                 <tr class="border-b"><td class="p-2 text-gray-600">${sh.date}</td><td class="p-2 font-medium">${sh.title}</td><td class="p-2 text-right font-bold ${sh.type.startsWith('INCOME') ? 'text-green-600' : 'text-indigo-600'}">${sh.type.startsWith('INCOME') ? '+' : '-'}${formatPHP(sh.amount)}</td></tr>
             `).join('') || '<tr><td colspan="3" class="py-3 text-center text-gray-400">No savings history recorded yet.</td></tr>';
+
+            // Render Loans & Total Remaining Loans
+            const totalRemainingLoans = data.loans.reduce((acc, l) => acc + l.remaining, 0);
+            document.getElementById('total-loan-display').innerText = formatPHP(totalRemainingLoans);
 
             document.getElementById('activeLoansTableBody').innerHTML = data.loans.map(l => `
                 <tr class="border-b hover:bg-gray-50">
@@ -936,11 +987,17 @@
             } else {
                 sortedKeys.forEach(key => {
                     const group = grouped[key];
-                    let subTotal = group.items.reduce((acc, item) => acc + (item.status === 'FORECASTED' && item.type === 'EXPENSE' ? item.amount : 0), 0);
+                    let subTotalExpense = group.items.reduce((acc, item) => acc + (item.status === 'FORECASTED' && item.type === 'EXPENSE' ? item.amount : 0), 0);
+                    let subTotalIncome = group.items.reduce((acc, item) => acc + (item.status === 'FORECASTED' && item.type === 'INCOME' ? item.amount : 0), 0);
+                    
                     forecastHtml += `
                         <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 space-y-3">
-                            <div class="flex justify-between items-center bg-indigo-50 text-indigo-700 font-bold px-3 py-2 rounded-xl text-xs uppercase tracking-wider border-l-4 border-indigo-600">
-                                <span>${group.title}</span><span>Pending Expense Total: ${formatPHP(subTotal)}</span>
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-indigo-50 text-indigo-700 font-bold px-3 py-2.5 rounded-xl text-xs uppercase tracking-wider border-l-4 border-indigo-600 gap-1">
+                                <span>${group.title}</span>
+                                <div class="flex items-center space-x-3 text-[11px]">
+                                    <span class="text-emerald-700">Income: ${formatPHP(subTotalIncome)}</span>
+                                    <span class="text-rose-700">Expense: ${formatPHP(subTotalExpense)}</span>
+                                </div>
                             </div>
                             <div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead><tr class="border-b text-gray-500 bg-gray-50"><th class="p-2">Status</th><th class="p-2">Date</th><th class="p-2">Title</th><th class="p-2">Amount (PHP)</th><th class="p-2">Category</th><th class="p-2">Type</th><th class="p-2 text-center">Action</th></tr></thead><tbody>`;
                     group.items.forEach(f => {

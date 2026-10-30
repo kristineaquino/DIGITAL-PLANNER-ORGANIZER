@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="browser-page-title">Ate Tine's Productivity Hub</title>
+    <title id="pageBrowserTitle">Task & Budget Manager - Ate Tine</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
@@ -15,55 +15,55 @@
         .tab-content.active { display: block; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans pb-24">
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans pb-20">
 
     <!-- Top Header -->
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
                 <div class="bg-pink-600 text-white p-2 rounded-xl shadow-md">
-                    <i class="fa-solid fa-layer-group text-xl"></i>
+                    <i class="fa-solid fa-chart-pie text-xl"></i>
                 </div>
                 <div>
-                    <h1 id="header-app-title" class="text-lg font-bold text-slate-900 leading-tight">Ate Tine's Productivity Hub</h1>
+                    <h1 id="headerTitleText" class="text-lg font-bold text-slate-900 leading-tight">Task & Budget Hub</h1>
                     <p class="text-xs text-slate-500">Manila, Philippines Time</p>
                 </div>
             </div>
 
             <!-- Navigation Tabs (Desktop) -->
             <nav class="hidden lg:flex space-x-1">
-                <button onclick="switchMasterTab('todo')" id="nav-todo" class="master-nav-btn px-3 py-2 rounded-lg text-sm font-medium text-pink-600 bg-pink-50 transition-all flex items-center space-x-2">
-                    <i class="fa-solid fa-list-check"></i><span>Tasks</span>
+                <button onclick="switchTab('todo')" id="nav-todo" class="nav-btn px-3 py-2 rounded-lg text-xs font-medium text-pink-600 bg-pink-50 transition-all flex items-center space-x-1.5">
+                    <i class="fa-solid fa-list-check"></i><span>To Do</span>
                 </button>
-                <button onclick="switchMasterTab('calendar')" id="nav-calendar" class="master-nav-btn px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-all flex items-center space-x-2">
-                    <i class="fa-solid fa-calendar-days"></i><span>Calendar & Financials</span>
+                <button onclick="switchTab('calendar')" id="nav-calendar" class="nav-btn px-3 py-2 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all flex items-center space-x-1.5">
+                    <i class="fa-solid fa-calendar-days"></i><span>Calendar</span>
                 </button>
-                <button onclick="switchMasterTab('budget')" id="nav-budget" class="master-nav-btn px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-all flex items-center space-x-2">
+                <button onclick="switchTab('budget')" id="nav-budget" class="nav-btn px-3 py-2 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all flex items-center space-x-1.5">
                     <i class="fa-solid fa-wallet"></i><span>Budget</span>
                 </button>
-                <button onclick="switchMasterTab('savings')" id="nav-savings" class="master-nav-btn px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-all flex items-center space-x-2">
+                <button onclick="switchTab('savings')" id="nav-savings" class="nav-btn px-3 py-2 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all flex items-center space-x-1.5">
                     <i class="fa-solid fa-piggy-bank"></i><span>Savings</span>
                 </button>
-                <button onclick="switchMasterTab('loans')" id="nav-loans" class="master-nav-btn px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-all flex items-center space-x-2">
-                    <i class="fa-solid fa-hand-holding-usd"></i><span>Loans</span>
+                <button onclick="switchTab('loans')" id="nav-loans" class="nav-btn px-3 py-2 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all flex items-center space-x-1.5">
+                    <i class="fa-solid fa-hand-holding-dollar"></i><span>Loans</span>
                 </button>
-                <button onclick="switchMasterTab('forecast')" id="nav-forecast" class="master-nav-btn px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-all flex items-center space-x-2">
+                <button onclick="switchTab('forecast')" id="nav-forecast" class="nav-btn px-3 py-2 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all flex items-center space-x-1.5">
                     <i class="fa-solid fa-chart-line"></i><span>Forecast</span>
                 </button>
-                <button onclick="switchMasterTab('settings')" id="nav-settings" class="master-nav-btn px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-all flex items-center space-x-2">
+                <button onclick="switchTab('settings')" id="nav-settings" class="nav-btn px-3 py-2 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all flex items-center space-x-1.5">
                     <i class="fa-solid fa-gear"></i><span>Settings</span>
                 </button>
-                <button onclick="switchMasterTab('about')" id="nav-about" class="master-nav-btn px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-all flex items-center space-x-2">
+                <button onclick="switchTab('about')" id="nav-about" class="nav-btn px-3 py-2 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all flex items-center space-x-1.5">
                     <i class="fa-solid fa-user"></i><span>About</span>
                 </button>
             </nav>
 
-            <!-- Quick Add Button -->
+            <!-- Quick Action Buttons -->
             <div class="flex items-center space-x-2">
-                <button onclick="openTaskModal()" class="bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold px-3 py-2 rounded-xl shadow-md transition-all flex items-center space-x-1.5">
+                <button onclick="openTaskModal()" class="bg-pink-600 hover:bg-pink-700 text-white text-xs font-medium px-3 py-2 rounded-xl shadow-md transition-all flex items-center space-x-1.5">
                     <i class="fa-solid fa-plus"></i><span>Task</span>
                 </button>
-                <button onclick="openModal('transactionModal')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-2 rounded-xl shadow-md transition-all flex items-center space-x-1.5">
+                <button onclick="openModal('transactionModal')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium px-3 py-2 rounded-xl shadow-md transition-all flex items-center space-x-1.5">
                     <i class="fa-solid fa-plus"></i><span>Budget</span>
                 </button>
             </div>
@@ -73,7 +73,7 @@
     <!-- Main Container -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
-        <!-- ================= 1. TASKS PAGE ================= -->
+        <!-- ================= 1. TO DO PAGE ================= -->
         <div id="tab-todo" class="tab-content active space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Graph Card -->
@@ -141,7 +141,7 @@
                         <i class="fa-solid fa-search absolute left-3 top-2.5 text-slate-400 text-xs"></i>
                         <input type="text" id="search-tasks" oninput="renderTasks()" placeholder="Search activities..." class="w-full pl-8 pr-4 py-2 bg-slate-50 border border-slate-200 text-xs rounded-xl outline-none focus:border-pink-500">
                     </div>
-                    <button onclick="exportTasksToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2 rounded-xl shadow-sm flex items-center space-x-2 transition-all">
+                    <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2 rounded-xl shadow-sm flex items-center space-x-2 transition-all">
                         <i class="fa-solid fa-file-excel"></i><span>Export CSV</span>
                     </button>
                 </div>
@@ -150,7 +150,7 @@
             <!-- Tasks Table Card -->
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                 <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
-                    <h3 id="table-section-title" class="text-sm font-bold text-slate-900">Task List</h3>
+                    <h3 class="text-sm font-bold text-slate-900">Task List</h3>
                     <span id="task-count-badge" class="text-xs text-slate-500 font-medium">0 tasks</span>
                 </div>
                 <div class="overflow-x-auto">
@@ -186,11 +186,11 @@
                             <button onclick="changeMonth(1)" class="p-2 hover:bg-white rounded-lg text-slate-600 transition-all"><i class="fa-solid fa-chevron-right text-xs"></i></button>
                         </div>
                     </div>
-                    <!-- Calendar Legend -->
+                    <!-- Legend -->
                     <div class="flex flex-wrap items-center gap-3 text-xs">
-                        <span class="flex items-center space-x-1.5"><span class="w-3 h-3 rounded-full bg-pink-500"></span><span class="text-slate-600">Work Task</span></span>
+                        <span class="flex items-center space-x-1.5"><span class="w-3 h-3 rounded-full bg-pink-500"></span><span class="text-slate-600">Work/Tasks</span></span>
                         <span class="flex items-center space-x-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500"></span><span class="text-slate-600">Income</span></span>
-                        <span class="flex items-center space-x-1.5"><span class="w-3 h-3 rounded-full bg-rose-500"></span><span class="text-slate-600">Expense / Loan</span></span>
+                        <span class="flex items-center space-x-1.5"><span class="w-3 h-3 rounded-full bg-rose-500"></span><span class="text-slate-600">Expense/Loan</span></span>
                         <span class="flex items-center space-x-1.5"><span class="w-3 h-3 rounded-full bg-amber-500"></span><span class="text-slate-600">Forecast</span></span>
                     </div>
                 </div>
@@ -213,12 +213,8 @@
         <div id="tab-budget" class="tab-content space-y-4">
             <div class="flex justify-between items-center">
                 <h2 class="text-xl font-bold text-gray-800">Budget Overview</h2>
-                <div class="flex space-x-2">
-                    <button onclick="exportToExcelWithCharts()" class="bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs hover:bg-indigo-800 font-semibold"><i class="fas fa-file-excel mr-1"></i> Export Excel</button>
-                    <button onclick="openModal('transactionModal')" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-sm font-semibold shadow">Add Entry</button>
-                </div>
+                <button onclick="openModal('transactionModal')" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-sm font-semibold shadow">Add Entry</button>
             </div>
-
             <div class="bg-white p-3 rounded-xl shadow flex space-x-2">
                 <select id="budgetFilterMonth" onchange="renderAll()" class="w-1/2 border p-2 rounded text-sm">
                     <option value="ALL">All Months</option>
@@ -230,19 +226,16 @@
                 <select id="budgetFilterYear" onchange="renderAll()" class="w-1/2 border p-2 rounded text-sm">
                     <option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option>
                     <option value="2029">2029</option><option value="2030">2030</option><option value="2031">2031</option>
-                    <option value="2032">2032</option><option value="2033">2033</option><option value="2034">2034</option><option value="2035">2035</option>
                 </select>
             </div>
-
             <div class="bg-white p-4 rounded-xl shadow space-y-4">
-                <h3 class="font-bold text-gray-700 text-sm">Filtered Visualizations (Income, Expense & Forecast)</h3>
+                <h3 class="font-bold text-gray-700 text-sm">Visualizations (Income, Expense & Forecast)</h3>
                 <div class="w-full max-w-md mx-auto"><canvas id="budgetIEChart"></canvas></div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div><canvas id="budgetLoanChart"></canvas></div>
                     <div><canvas id="budgetSavingsChart"></canvas></div>
                 </div>
             </div>
-
             <div class="bg-white p-4 rounded-xl shadow overflow-x-auto">
                 <h3 class="font-bold text-gray-700 mb-2">Transactions & Inflows</h3>
                 <table class="w-full text-left text-xs">
@@ -276,7 +269,7 @@
                     <thead>
                         <tr class="border-b text-gray-500 bg-gray-50">
                             <th class="p-2">Date</th>
-                            <th class="p-2">Bank / Acct Name</th>
+                            <th class="p-2">Bank / Name</th>
                             <th class="p-2">Initial Bal</th>
                             <th class="p-2">Running Bal</th>
                             <th class="p-2">Withdrawal</th>
@@ -289,7 +282,7 @@
                 </table>
             </div>
             <div class="bg-white p-4 rounded-xl shadow overflow-x-auto">
-                <h3 class="font-bold text-gray-700 mb-2 text-sm">Savings Deposit & Withdrawal History</h3>
+                <h3 class="font-bold text-gray-700 mb-2 text-sm">Savings History</h3>
                 <table class="w-full text-left text-xs">
                     <thead>
                         <tr class="border-b text-gray-500 bg-gray-50">
@@ -322,26 +315,13 @@
                             <th class="p-2">Installment</th>
                             <th class="p-2">Remaining</th>
                             <th class="p-2">Type</th>
-                            <th class="p-2">Terms (Mos)</th>
+                            <th class="p-2">Terms</th>
                             <th class="p-2">Freq</th>
                             <th class="p-2">Due Dates</th>
                             <th class="p-2 text-center">Action</th>
                         </tr>
                     </thead>
                     <tbody id="activeLoansTableBody"></tbody>
-                </table>
-            </div>
-            <div class="bg-white p-4 rounded-xl shadow overflow-x-auto">
-                <h3 class="font-bold text-gray-700 mb-2 text-sm">Loan Payment History</h3>
-                <table class="w-full text-left text-xs">
-                    <thead>
-                        <tr class="border-b text-gray-500 bg-gray-50">
-                            <th class="p-2">Date</th>
-                            <th class="p-2">Loan Name</th>
-                            <th class="p-2 text-right">Amount Paid</th>
-                        </tr>
-                    </thead>
-                    <tbody id="loanPaymentHistoryTable"></tbody>
                 </table>
             </div>
         </div>
@@ -363,7 +343,6 @@
                 <select id="filterYear" onchange="renderAll()" class="w-1/2 border p-2 rounded text-sm">
                     <option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option>
                     <option value="2029">2029</option><option value="2030">2030</option><option value="2031">2031</option>
-                    <option value="2032">2032</option><option value="2033">2033</option><option value="2034">2034</option><option value="2035">2035</option>
                 </select>
             </div>
             <div id="forecastContainer" class="space-y-6"></div>
@@ -372,52 +351,28 @@
         <!-- ================= 7. SETTINGS PAGE ================= -->
         <div id="tab-settings" class="tab-content space-y-4">
             <h2 class="text-xl font-bold text-gray-800">Settings & Data Management</h2>
-            
-            <!-- App Title Customization Setting -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-                <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
-                    <i class="fa-solid fa-heading text-pink-600"></i><span>App Title & Branding</span>
-                </h3>
-                <p class="text-xs text-slate-500">Change the title displayed on the header banner and browser tab.</p>
-                <div class="flex gap-2 pt-1">
-                    <input type="text" id="custom-app-title-input" placeholder="e.g. My Productivity Hub" class="flex-1 bg-slate-50 border border-slate-200 text-xs rounded-xl px-3 py-2 outline-none focus:border-pink-500">
-                    <button onclick="saveAppTitle()" class="bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition-all">Save Title</button>
+            <div class="bg-white p-4 rounded-xl shadow space-y-3">
+                <h3 class="font-bold text-gray-700 text-sm">Rename App Title</h3>
+                <div class="flex space-x-2">
+                    <input type="text" id="appTitleInput" placeholder="Enter new title..." class="border p-2 rounded flex-1 text-sm">
+                    <button onclick="updateAppTitle()" class="bg-indigo-600 text-white px-4 py-2 rounded text-sm">Save Title</button>
                 </div>
             </div>
-
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-                <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
-                    <i class="fa-solid fa-database text-pink-600"></i><span>Backup & Restore Suite</span>
-                </h3>
-                <p class="text-xs text-slate-500">Download a complete backup JSON file of all your tasks, budget transactions, loans, and forecasts, or restore from a previous backup.</p>
-                <div class="flex flex-wrap gap-3 pt-2">
-                    <button onclick="downloadFullBackup()" class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-all flex items-center space-x-2">
-                        <i class="fa-solid fa-download"></i><span>Download Backup</span>
+            <div class="bg-white p-4 rounded-xl shadow space-y-3">
+                <h3 class="font-bold text-gray-700 text-sm">Cross-Device Data Backup</h3>
+                <div class="flex space-x-2 pt-2">
+                    <button onclick="downloadBackup()" class="bg-emerald-600 text-white px-3 py-2 rounded text-xs font-semibold shadow flex-1">
+                        <i class="fas fa-download mr-1"></i> Download Backup
                     </button>
-                    <label class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-4 py-2.5 rounded-xl cursor-pointer transition-all flex items-center space-x-2">
-                        <i class="fa-solid fa-upload"></i><span>Restore Backup</span>
-                        <input type="file" id="restore-file-input" onchange="restoreFullBackup(event)" accept=".json" class="hidden">
+                    <label class="bg-blue-600 text-white px-3 py-2 rounded text-xs font-semibold shadow flex-1 text-center cursor-pointer">
+                        <i class="fas fa-upload mr-1"></i> Restore Backup <input type="file" onchange="restoreBackup(event)" class="hidden" accept=".json">
                     </label>
                 </div>
             </div>
-
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-                <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
-                    <i class="fa-solid fa-tags text-pink-600"></i><span>Custom Categories</span>
-                </h3>
-                <div class="flex gap-2 pt-2">
-                    <input type="text" id="new-category-input" placeholder="Category name..." class="flex-1 bg-slate-50 border border-slate-200 text-xs rounded-xl px-3 py-2 outline-none focus:border-pink-500">
-                    <button onclick="addCustomCategory()" class="bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition-all">Add</button>
-                </div>
-                <div id="category-list" class="flex flex-wrap gap-2 pt-2"></div>
-            </div>
-
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-rose-200 space-y-4">
-                <h3 class="text-sm font-bold text-rose-600 flex items-center space-x-2">
-                    <i class="fa-solid fa-triangle-exclamation"></i><span>Danger Zone</span>
-                </h3>
-                <button onclick="clearAllData()" class="bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold px-4 py-2.5 rounded-xl transition-all border border-rose-200 flex items-center space-x-2">
-                    <i class="fa-solid fa-trash-can"></i><span>Clear All Data</span>
+            <div class="bg-white p-4 rounded-xl shadow space-y-3 border border-rose-200">
+                <h3 class="font-bold text-rose-600 text-sm">Danger Zone</h3>
+                <button onclick="clearAllData()" class="bg-rose-50 text-rose-600 hover:bg-rose-100 w-full py-2.5 rounded-xl text-xs font-semibold shadow border border-rose-200">
+                    <i class="fas fa-trash-can mr-1"></i> Clear All Data
                 </button>
             </div>
         </div>
@@ -426,64 +381,40 @@
         <div id="tab-about" class="tab-content space-y-6">
             <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200 max-w-3xl mx-auto space-y-6">
                 <div class="flex items-center space-x-4">
-                    <div class="w-16 h-16 bg-pink-100 text-pink-600 rounded-2xl flex items-center justify-center text-2xl font-bold shadow-inner">
-                        AT
-                    </div>
+                    <div class="w-16 h-16 bg-pink-100 text-pink-600 rounded-2xl flex items-center justify-center text-2xl font-bold shadow-inner">AT</div>
                     <div>
                         <h2 class="text-xl font-bold text-slate-900">Ate Tine (Kristine Aquino)</h2>
-                        <p class="text-xs text-slate-500">Competency Enhancement & Retooling Program Head - QC PESO | Instructor</p>
+                        <p class="text-xs text-slate-500">Task Manager & Budget Hub</p>
                     </div>
                 </div>
-
                 <div class="space-y-4 text-sm text-slate-600 leading-relaxed">
                     <p>I’m always open to discussing new projects, creative ideas, or opportunities to collaborate.</p>
-                    <p>Feel free to reach out directly at <a href="mailto:kristine.aquino2019@gmail.com" class="text-pink-600 font-medium underline">kristine.aquino2019@gmail.com</a> or connect with me on LinkedIn at <a href="https://www.linkedin.com/in/kristineaquino/" target="_blank" class="text-pink-600 font-medium underline">https://www.linkedin.com/in/kristineaquino/</a></p>
+                    <p>Reach out directly at <a href="mailto:kristine.aquino2019@gmail.com" class="text-pink-600 font-medium underline">kristine.aquino2019@gmail.com</a> or connect on LinkedIn at <a href="https://www.linkedin.com/in/kristineaquino/" target="_blank" class="text-pink-600 font-medium underline">https://www.linkedin.com/in/kristineaquino/</a></p>
                     <p class="font-semibold text-slate-900 pt-2">~ Ate Tine</p>
                 </div>
-
                 <div class="pt-4 border-t border-slate-100">
-                    <h3 class="text-xs font-bold text-slate-400 uppercase mb-3">My Portfolio</h3>
                     <a href="https://sites.google.com/view/kristinedaquino/home" target="_blank" class="inline-flex items-center space-x-2 bg-pink-50 hover:bg-pink-100 text-pink-700 text-xs font-semibold px-4 py-2.5 rounded-xl transition-all">
                         <i class="fa-solid fa-globe"></i><span>View Google Sites Portfolio</span>
                     </a>
                 </div>
-
-                <div class="pt-6 border-t border-slate-200 space-y-4">
-                    <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
-                        <i class="fa-solid fa-comment-dots text-pink-600"></i><span>Suggestion or Found an Error?</span>
-                    </h3>
-                    <form onsubmit="sendFeedbackEmail(event)" class="space-y-3">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Your Email Address</label>
-                            <input type="email" id="feedback-email" required placeholder="name@example.com" class="w-full bg-slate-50 border border-slate-200 text-xs rounded-xl px-3 py-2.5 outline-none focus:border-pink-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Message / Error Report</label>
-                            <textarea id="feedback-message" required rows="3" placeholder="Describe the suggestion or error..." class="w-full bg-slate-50 border border-slate-200 text-xs rounded-xl px-3 py-2.5 outline-none focus:border-pink-500"></textarea>
-                        </div>
-                        <button type="submit" class="bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold px-5 py-2.5 rounded-xl shadow-sm transition-all flex items-center space-x-2">
-                            <i class="fa-solid fa-paper-plane"></i><span>Send to Ate Tine</span>
-                        </button>
-                    </form>
-                </div>
             </div>
         </div>
+
     </main>
 
-    <!-- Bottom Navigation Bar (Mobile Friendly) -->
-    <nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around py-2 shadow-lg z-40">
-        <button onclick="switchMasterTab('todo')" class="master-nav-btn-mob text-pink-600 flex flex-col items-center"><i class="fas fa-list-check text-base"></i><span class="text-[10px]">Tasks</span></button>
-        <button onclick="switchMasterTab('calendar')" class="master-nav-btn-mob text-gray-400 flex flex-col items-center"><i class="fas fa-calendar-alt text-base"></i><span class="text-[10px]">Calendar</span></button>
-        <button onclick="switchMasterTab('budget')" class="master-nav-btn-mob text-gray-400 flex flex-col items-center"><i class="fas fa-wallet text-base"></i><span class="text-[10px]">Budget</span></button>
-        <button onclick="switchMasterTab('savings')" class="master-nav-btn-mob text-gray-400 flex flex-col items-center"><i class="fas fa-piggy-bank text-base"></i><span class="text-[10px]">Savings</span></button>
-        <button onclick="switchMasterTab('loans')" class="master-nav-btn-mob text-gray-400 flex flex-col items-center"><i class="fas fa-hand-holding-usd text-base"></i><span class="text-[10px]">Loans</span></button>
-        <button onclick="switchMasterTab('forecast')" class="master-nav-btn-mob text-gray-400 flex flex-col items-center"><i class="fas fa-chart-line text-base"></i><span class="text-[10px]">Forecast</span></button>
-        <button onclick="switchMasterTab('settings')" class="master-nav-btn-mob text-gray-400 flex flex-col items-center"><i class="fas fa-cog text-base"></i><span class="text-[10px]">Settings</span></button>
-        <button onclick="switchMasterTab('about')" class="master-nav-btn-mob text-gray-400 flex flex-col items-center"><i class="fas fa-user text-base"></i><span class="text-[10px]">About</span></button>
+    <!-- Bottom Navigation Bar (Mobile / General Access) -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around py-2 shadow-lg z-40 lg:hidden">
+        <button onclick="switchTab('todo')" class="nav-mobile-btn text-pink-600 flex flex-col items-center"><i class="fa-solid fa-list-check text-sm"></i><span class="text-[10px]">Tasks</span></button>
+        <button onclick="switchTab('calendar')" class="nav-mobile-btn text-slate-400 flex flex-col items-center"><i class="fa-solid fa-calendar-days text-sm"></i><span class="text-[10px]">Calendar</span></button>
+        <button onclick="switchTab('budget')" class="nav-mobile-btn text-slate-400 flex flex-col items-center"><i class="fa-solid fa-wallet text-sm"></i><span class="text-[10px]">Budget</span></button>
+        <button onclick="switchTab('savings')" class="nav-mobile-btn text-slate-400 flex flex-col items-center"><i class="fa-solid fa-piggy-bank text-sm"></i><span class="text-[10px]">Savings</span></button>
+        <button onclick="switchTab('loans')" class="nav-mobile-btn text-slate-400 flex flex-col items-center"><i class="fa-solid fa-hand-holding-dollar text-sm"></i><span class="text-[10px]">Loans</span></button>
+        <button onclick="switchTab('forecast')" class="nav-mobile-btn text-slate-400 flex flex-col items-center"><i class="fa-solid fa-chart-line text-sm"></i><span class="text-[10px]">Forecast</span></button>
+        <button onclick="switchTab('settings')" class="nav-mobile-btn text-slate-400 flex flex-col items-center"><i class="fa-solid fa-gear text-sm"></i><span class="text-[10px]">Settings</span></button>
     </nav>
 
     <!-- MODALS -->
-    <!-- ADD/EDIT TASK MODAL -->
+    <!-- Task Modal -->
     <div id="task-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-white rounded-3xl shadow-xl max-w-md w-full p-6 space-y-4 my-8">
             <div class="flex items-center justify-between pb-2 border-b border-slate-100">
@@ -494,7 +425,7 @@
                 <input type="hidden" id="task-edit-id">
                 <div>
                     <label class="block font-semibold text-slate-700 mb-1">Activity Name *</label>
-                    <input type="text" id="task-activity" required placeholder="e.g., Team alignment meeting" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-pink-500">
+                    <input type="text" id="task-activity" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-pink-500">
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
@@ -504,49 +435,49 @@
                     <div>
                         <label class="block font-semibold text-slate-700 mb-1">Schedule Type *</label>
                         <select id="task-schedule-type" onchange="toggleScheduleType()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-pink-500 font-medium text-pink-600">
-                            <option value="wholeday">Whole Day (8 AM - 5 PM)</option>
+                            <option value="wholeday">Whole Day</option>
                             <option value="specific">Specific Time</option>
                         </select>
                     </div>
                 </div>
                 <div id="specific-time-container" class="grid grid-cols-2 gap-3 hidden">
-                    <div><label class="block font-semibold text-slate-700 mb-1">Start Time</label><input type="time" id="task-start-time" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none"></div>
-                    <div><label class="block font-semibold text-slate-700 mb-1">End Time</label><input type="time" id="task-end-time" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none"></div>
+                    <div><label class="block font-semibold text-slate-700 mb-1">Start Time</label><input type="time" id="task-start-time" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2"></div>
+                    <div><label class="block font-semibold text-slate-700 mb-1">End Time</label><input type="time" id="task-end-time" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2"></div>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block font-semibold text-slate-700 mb-1">Category *</label>
-                        <select id="task-category" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none">
+                        <select id="task-category" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-pink-500">
                             <option value="WORK">WORK</option><option value="PERSONAL">PERSONAL</option><option value="SCHOOL">SCHOOL</option><option value="FAMILY">FAMILY</option>
                         </select>
                     </div>
                     <div>
                         <label class="block font-semibold text-slate-700 mb-1">Urgency *</label>
-                        <select id="task-urgency" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none">
+                        <select id="task-urgency" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-pink-500">
                             <option value="URGENT">URGENT</option><option value="NORMAL" selected>NORMAL</option><option value="LOW">LOW</option><option value="MEDIUM">MEDIUM</option>
                         </select>
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
-                    <div><label class="block font-semibold text-slate-700 mb-1">General Link</label><input type="url" id="task-link" placeholder="https://..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none"></div>
-                    <div><label class="block font-semibold text-slate-700 mb-1">Presentation Link</label><input type="url" id="task-pres-link" placeholder="https://canva..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none"></div>
+                    <div><label class="block font-semibold text-slate-700 mb-1">General Link</label><input type="url" id="task-link" placeholder="https://..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2"></div>
+                    <div><label class="block font-semibold text-slate-700 mb-1">Presentation Link</label><input type="url" id="task-pres-link" placeholder="https://..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2"></div>
                 </div>
                 <div>
                     <label class="block font-semibold text-slate-700 mb-1">Initial Status</label>
-                    <select id="task-status" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none">
+                    <select id="task-status" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
                         <option value="ON GOING">ON GOING</option><option value="COMPLETED">COMPLETED</option><option value="RESCHED">RESCHED</option><option value="CANCELED">CANCELED</option>
                     </select>
                 </div>
-                <div><label class="block font-semibold text-slate-700 mb-1">Remarks</label><textarea id="task-remarks" rows="2" placeholder="Optional notes..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none"></textarea></div>
+                <div><label class="block font-semibold text-slate-700 mb-1">Remarks</label><textarea id="task-remarks" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2"></textarea></div>
                 <div class="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100">
                     <button type="button" onclick="closeTaskModal()" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-semibold">Cancel</button>
-                    <button type="submit" class="bg-pink-600 hover:bg-pink-700 text-white font-semibold px-5 py-2 rounded-xl shadow-sm transition-all">Save Task</button>
+                    <button type="submit" class="bg-pink-600 hover:bg-pink-700 text-white font-semibold px-5 py-2 rounded-xl shadow-sm">Save Task</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- TRANSACTION MODAL -->
+    <!-- Transaction Modal -->
     <div id="transactionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white p-6 rounded-xl w-full max-w-sm space-y-3">
             <h3 class="text-lg font-bold">Add Budget Entry</h3>
@@ -556,7 +487,6 @@
                 <option value="GENERAL">General</option><option value="FOOD">Food</option><option value="UTILITIES">Utilities</option><option value="SALARY">Salary</option><option value="LOAN">Loan</option><option value="SAVINGS">Savings</option>
             </select>
             <select id="tType" class="w-full border p-2 rounded text-xs"></select>
-            <input type="date" id="tDate" class="w-full border p-2 rounded text-xs">
             <div class="flex justify-end space-x-2">
                 <button onclick="closeModal('transactionModal')" class="px-4 py-2 text-gray-600 text-xs">Cancel</button>
                 <button onclick="addTransaction()" class="bg-indigo-600 text-white px-4 py-2 rounded text-xs">Save</button>
@@ -564,7 +494,7 @@
         </div>
     </div>
 
-    <!-- SAVINGS MODAL -->
+    <!-- Savings Modal -->
     <div id="savingsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white p-6 rounded-xl w-full max-w-sm space-y-3">
             <h3 class="text-lg font-bold">Add Bank Savings Account</h3>
@@ -578,40 +508,28 @@
         </div>
     </div>
 
-    <!-- LOAN MODAL -->
+    <!-- Loan Modal -->
     <div id="loanModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white p-6 rounded-xl w-full max-w-sm space-y-3">
             <h3 class="text-lg font-bold">Add Loan</h3>
             <input type="text" id="lName" placeholder="Loan Name" class="w-full border p-2 rounded text-xs">
             <input type="number" id="lAmount" placeholder="Principal Amount" class="w-full border p-2 rounded text-xs">
-            <select id="lType" class="w-full border p-2 rounded text-xs"><option value="PAYABLE">Payable (I owe)</option><option value="RECEIVABLE">Receivable (Owed to me)</option></select>
-            <input type="number" id="lMonths" placeholder="Terms (Number of Months)" class="w-full border p-2 rounded text-xs">
+            <select id="lType" class="w-full border p-2 rounded text-xs"><option value="PAYABLE">Payable (I owe)</option><option value="RECEIVABLE">Receivable</option></select>
+            <input type="number" id="lMonths" placeholder="Terms (Months)" class="w-full border p-2 rounded text-xs">
             <input type="number" id="lInstallment" placeholder="Installment Amount" class="w-full border p-2 rounded text-xs">
-            <label class="block text-xs font-bold text-gray-600 mt-2">Frequency:</label>
-            <div class="flex space-x-4 text-xs">
-                <label><input type="radio" name="lFreq" value="MONTHLY" checked onchange="toggleFreqFields()"> Monthly</label>
-                <label><input type="radio" name="lFreq" value="SEMIMONTHLY" onchange="toggleFreqFields()"> Semi-Monthly</label>
-            </div>
-            <div id="monthlyDateContainer"><input type="number" id="lDueDate" placeholder="Due Date (Day: 1-31)" min="1" max="31" class="w-full border p-2 rounded mt-2 text-xs"></div>
-            <div id="semiMonthlyDateContainer" class="hidden space-y-2 mt-2">
-                <input type="number" id="lDue1" placeholder="First Due Date (e.g. 15)" min="1" max="31" class="w-full border p-2 rounded text-xs">
-                <input type="number" id="lDue2" placeholder="Second Due Date (e.g. 30)" min="1" max="31" class="w-full border p-2 rounded text-xs">
-            </div>
-            <div class="flex justify-end space-x-2 pt-2">
+            <div class="flex justify-end space-x-2">
                 <button onclick="closeModal('loanModal')" class="px-4 py-2 text-gray-600 text-xs">Cancel</button>
                 <button onclick="addLoan()" class="bg-indigo-600 text-white px-4 py-2 rounded text-xs">Save</button>
             </div>
         </div>
     </div>
 
-    <!-- FORECAST MODAL -->
+    <!-- Forecast Modal -->
     <div id="forecastModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white p-6 rounded-xl w-full max-w-sm space-y-3">
             <h3 class="text-lg font-bold">Add Forecast Entry</h3>
             <select id="fTypeSelect" class="w-full border p-2 rounded text-xs"><option value="INCOME">Income</option><option value="EXPENSE">Expense</option></select>
-            <select id="fCategorySelect" class="w-full border p-2 rounded text-xs">
-                <option value="GENERAL">General</option><option value="FOOD">Food</option><option value="UTILITIES">Utilities</option><option value="SALARY">Salary</option><option value="LOAN">Loan</option><option value="SAVINGS">Savings</option>
-            </select>
+            <select id="fCategorySelect" class="w-full border p-2 rounded text-xs"><option value="GENERAL">General</option><option value="FOOD">Food</option><option value="UTILITIES">Utilities</option><option value="SALARY">Salary</option><option value="LOAN">Loan</option><option value="SAVINGS">Savings</option></select>
             <input type="text" id="fTitle" placeholder="Title / Name" class="w-full border p-2 rounded text-xs">
             <input type="number" id="fAmount" placeholder="Amount (PHP)" class="w-full border p-2 rounded text-xs">
             <input type="date" id="fDate" class="w-full border p-2 rounded text-xs">
@@ -622,57 +540,32 @@
         </div>
     </div>
 
-    <!-- Unified Script Integration -->
+    <!-- JavaScript Application Logic -->
     <script>
-        let appTitle = localStorage.getItem('tine_app_title') || "Ate Tine's Productivity Hub";
-
-        let tasks = JSON.parse(localStorage.getItem('tine_tasks')) || [
-            { id: '1', activity: 'Team Retooling Workshop', date: '2026-10-30', scheduleType: 'wholeday', startTime: '08:00', endTime: '17:00', category: 'WORK', urgency: 'URGENT', link: 'https://meet.google.com', presLink: '', status: 'ON GOING', remarks: 'Prepare slides' }
-        ];
-
-        let budgetData = JSON.parse(localStorage.getItem('budgetAppV16')) || {
+        let tasks = JSON.parse(localStorage.getItem('tine_tasks')) || [];
+        let budgetData = JSON.parse(localStorage.getItem('budgetAppV17')) || {
+            appTitle: "Task & Budget Hub",
             transactions: [], savings: [], loans: [], forecasts: [], categories: ['GENERAL', 'FOOD', 'UTILITIES', 'SALARY', 'LOAN', 'SAVINGS']
         };
 
-        let customCategories = JSON.parse(localStorage.getItem('tine_custom_categories')) || ['PROJECT KRAFTINE'];
         let statusChartInstance = null;
         let currentDate = new Date();
         let charts = {};
 
         document.addEventListener('DOMContentLoaded', () => {
-            applyAppTitle();
             initYearDropdowns();
-            initCustomCategoriesUI();
             updateTodayBadge();
-            document.getElementById('tDate').value = new Date().toISOString().split('T')[0];
-            document.getElementById('fDate').value = new Date().toISOString().split('T')[0];
+            renderTasks();
+            renderCalendar();
+            initChart();
             renderAll();
         });
 
-        function applyAppTitle() {
-            document.getElementById('browser-page-title').innerText = appTitle;
-            document.getElementById('header-app-title').innerText = appTitle;
-            const inputField = document.getElementById('custom-app-title-input');
-            if(inputField) inputField.value = appTitle;
-        }
-
-        function saveAppTitle() {
-            const inputVal = document.getElementById('custom-app-title-input').value.trim();
-            if(inputVal) {
-                appTitle = inputVal;
-                localStorage.setItem('tine_app_title', appTitle);
-                applyAppTitle();
-                alert('App title updated successfully!');
-            } else {
-                alert('Please enter a valid title.');
-            }
-        }
-
-        function switchMasterTab(tabId) {
+        function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById(`tab-${tabId}`).classList.add('active');
 
-            document.querySelectorAll('.master-nav-btn').forEach(btn => {
+            document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.classList.remove('text-pink-600', 'bg-pink-50');
                 btn.classList.add('text-slate-600', 'hover:bg-slate-100');
             });
@@ -684,13 +577,17 @@
 
             if(tabId === 'calendar') renderCalendar();
             if(tabId === 'todo') { renderTasks(); updateChart(); }
-            updateCharts();
+            if(tabId === 'budget' || tabId === 'savings' || tabId === 'loans' || tabId === 'forecast') updateCharts();
+        }
+
+        function formatPHP(num) {
+            return '₱' + Number(num).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
         function initYearDropdowns() {
             const yearSelect = document.getElementById('filter-year');
             const currentYear = new Date().getFullYear();
-            let options = '<option value="">All Years</option>';
+            let options = '';
             for(let y = 2024; y <= 2035; y++) {
                 options += `<option value="${y}" ${y === currentYear ? 'selected' : ''}>${y}</option>`;
             }
@@ -715,30 +612,7 @@
             const form = document.getElementById('task-form');
             form.reset();
             document.getElementById('task-edit-id').value = '';
-            document.getElementById('modal-title').innerText = 'Add New Task';
             document.getElementById('task-date').value = new Date().toISOString().split('T')[0];
-            document.getElementById('task-schedule-type').value = 'wholeday';
-            toggleScheduleType();
-
-            if(editId) {
-                const task = tasks.find(t => t.id === editId);
-                if(task) {
-                    document.getElementById('modal-title').innerText = 'Edit Task';
-                    document.getElementById('task-edit-id').value = task.id;
-                    document.getElementById('task-activity').value = task.activity;
-                    document.getElementById('task-date').value = task.date;
-                    document.getElementById('task-schedule-type').value = task.scheduleType || 'wholeday';
-                    toggleScheduleType();
-                    document.getElementById('task-start-time').value = task.startTime || '';
-                    document.getElementById('task-end-time').value = task.endTime || '';
-                    document.getElementById('task-category').value = task.category;
-                    document.getElementById('task-urgency').value = task.urgency;
-                    document.getElementById('task-link').value = task.link || '';
-                    document.getElementById('task-pres-link').value = task.presLink || '';
-                    document.getElementById('task-status').value = task.status;
-                    document.getElementById('task-remarks').value = task.remarks || '';
-                }
-            }
             modal.classList.remove('hidden');
         }
 
@@ -746,15 +620,23 @@
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); if(id === 'transactionModal') updateTransactionTypeOptions(); }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
+        function updateTransactionTypeOptions() {
+            const category = document.getElementById('tCategory').value;
+            const typeSelect = document.getElementById('tType');
+            if (category === 'SALARY') typeSelect.innerHTML = '<option value="INCOME - SALARY">INCOME - SALARY</option>';
+            else if (category === 'LOAN') typeSelect.innerHTML = '<option value="INCOME - LOAN">INCOME - LOAN</option><option value="EXPENSE - LOAN">EXPENSE - LOAN</option>';
+            else if (category === 'SAVINGS') typeSelect.innerHTML = '<option value="INCOME - SAVINGS WITHDRAWAL">INCOME - SAVINGS WITHDRAWAL</option><option value="EXPENSE - SAVINGS">EXPENSE - SAVINGS</option>';
+            else typeSelect.innerHTML = '<option value="INCOME - GENERAL">INCOME - GENERAL</option><option value="EXPENSE - GENERAL">EXPENSE - GENERAL</option>';
+        }
+
         function handleTaskSubmit(e) {
             e.preventDefault();
-            const editId = document.getElementById('task-edit-id').value;
             const scheduleType = document.getElementById('task-schedule-type').value;
             const taskData = {
-                id: editId ? editId : Date.now().toString(),
+                id: Date.now().toString(),
                 activity: document.getElementById('task-activity').value,
                 date: document.getElementById('task-date').value,
-                scheduleType: scheduleType,
+                scheduleType,
                 startTime: scheduleType === 'wholeday' ? '08:00' : document.getElementById('task-start-time').value,
                 endTime: scheduleType === 'wholeday' ? '17:00' : document.getElementById('task-end-time').value,
                 category: document.getElementById('task-category').value,
@@ -764,40 +646,84 @@
                 status: document.getElementById('task-status').value,
                 remarks: document.getElementById('task-remarks').value
             };
-
-            if(editId) {
-                const index = tasks.findIndex(t => t.id === editId);
-                if(index !== -1) tasks[index] = taskData;
-            } else {
-                tasks.push(taskData);
-            }
-            saveAndRefreshTasks();
+            tasks.push(taskData);
+            saveAndRefresh();
             closeTaskModal();
         }
 
-        function deleteTask(id) {
-            if(confirm('Delete this task?')) {
-                tasks = tasks.filter(t => t.id !== id);
-                saveAndRefreshTasks();
-            }
-        }
+        function deleteTask(id) { tasks = tasks.filter(t => t.id !== id); saveAndRefresh(); }
+        function updateStatus(id, newStatus) { const t = tasks.find(t => t.id === id); if(t) { t.status = newStatus; saveAndRefresh(); } }
+        function updateRemarks(id, newRemarks) { const t = tasks.find(t => t.id === id); if(t) { t.remarks = newRemarks; localStorage.setItem('tine_tasks', JSON.stringify(tasks)); } }
 
-        function updateRemarks(id, val) {
-            const task = tasks.find(t => t.id === id);
-            if(task) { task.remarks = val; localStorage.setItem('tine_tasks', JSON.stringify(tasks)); }
-        }
-
-        function updateStatus(id, val) {
-            const task = tasks.find(t => t.id === id);
-            if(task) { task.status = val; saveAndRefreshTasks(); }
-        }
-
-        function saveAndRefreshTasks() {
+        function saveAndRefresh() {
             localStorage.setItem('tine_tasks', JSON.stringify(tasks));
             renderTasks();
             renderCalendar();
             updateChart();
         }
+
+        function saveData() {
+            localStorage.setItem('budgetAppV17', JSON.stringify(budgetData));
+            renderAll();
+            renderCalendar();
+        }
+
+        function addTransaction() {
+            const title = document.getElementById('tTitle').value;
+            const amount = parseFloat(document.getElementById('tAmount').value);
+            const category = document.getElementById('tCategory').value;
+            const type = document.getElementById('tType').value;
+            if(title && amount > 0) {
+                budgetData.transactions.unshift({id: Date.now(), title, amount, category, type, date: new Date().toISOString().split('T')[0]});
+                closeModal('transactionModal');
+                saveData();
+            }
+        }
+        function deleteTransaction(id) { budgetData.transactions = budgetData.transactions.filter(t => t.id !== id); saveData(); }
+
+        function addSavingsAccount() {
+            const name = document.getElementById('sName').value;
+            const initial = parseFloat(document.getElementById('sInitial').value) || 0;
+            const interest = parseFloat(document.getElementById('sInterest').value) || 0;
+            if(name) {
+                budgetData.savings.push({id: Date.now(), name, initial, balance: initial, interest, withdrawal: 0, deposit: 0, date: new Date().toISOString().split('T')[0]});
+                closeModal('savingsModal');
+                saveData();
+            }
+        }
+        function deleteSavings(id) { budgetData.savings = budgetData.savings.filter(s => s.id !== id); saveData(); }
+
+        function addLoan() {
+            const name = document.getElementById('lName').value;
+            const principal = parseFloat(document.getElementById('lAmount').value);
+            const installment = parseFloat(document.getElementById('lInstallment').value) || 0;
+            const type = document.getElementById('lType').value;
+            const months = parseInt(document.getElementById('lMonths').value) || 1;
+            if(name && principal > 0) {
+                budgetData.loans.push({id: Date.now(), name, principal, remaining: principal, installment, type, months, freq: 'MONTHLY', dueDates: 'Day 10 monthly'});
+                closeModal('loanModal');
+                saveData();
+            }
+        }
+        function deleteLoan(id) { budgetData.loans = budgetData.loans.filter(l => l.id !== id); saveData(); }
+
+        function addForecast() {
+            const fType = document.getElementById('fTypeSelect').value;
+            const category = document.getElementById('fCategorySelect').value;
+            const title = document.getElementById('fTitle').value;
+            const amount = parseFloat(document.getElementById('fAmount').value);
+            const date = document.getElementById('fDate').value || new Date().toISOString().split('T')[0];
+            if(title && amount > 0) {
+                budgetData.forecasts.push({id: Date.now(), status: 'FORECASTED', type: fType, category, title, amount, date});
+                closeModal('forecastModal');
+                saveData();
+            }
+        }
+        function updateForecastStatus(id, newStatus) {
+            const f = budgetData.forecasts.find(x => x.id === id);
+            if(f) { f.status = newStatus; saveData(); }
+        }
+        function deleteForecast(id) { budgetData.forecasts = budgetData.forecasts.filter(f => f.id !== id); saveData(); }
 
         function renderTasks() {
             const tbody = document.getElementById('task-table-body');
@@ -827,29 +753,23 @@
                 return;
             }
 
-            tbody.innerHTML = filtered.map(t => `
-                <tr class="hover:bg-slate-50/80 transition-all">
-                    <td class="py-3 px-4">
-                        <select onchange="updateStatus('${t.id}', this.value)" class="text-[11px] font-semibold rounded-lg px-2 py-1 border outline-none cursor-pointer">
-                            <option value="ON GOING" ${t.status === 'ON GOING' ? 'selected' : ''}>ON GOING</option>
-                            <option value="COMPLETED" ${t.status === 'COMPLETED' ? 'selected' : ''}>COMPLETED</option>
-                            <option value="RESCHED" ${t.status === 'RESCHED' ? 'selected' : ''}>RESCHED</option>
-                            <option value="CANCELED" ${t.status === 'CANCELED' ? 'selected' : ''}>CANCELED</option>
-                        </select>
-                    </td>
-                    <td class="py-3 px-4 font-semibold"><span class="px-2 py-0.5 rounded border text-[10px]">${t.urgency}</span></td>
-                    <td class="py-3 px-4 font-semibold text-slate-900">${t.activity}</td>
-                    <td class="py-3 px-4 text-slate-500 whitespace-nowrap">${t.date}</td>
-                    <td class="py-3 px-4"><span class="bg-slate-100 text-slate-700 font-medium px-2 py-0.5 rounded text-[10px]">${t.category}</span></td>
-                    <td class="py-3 px-4">${t.link ? `<a href="${t.link}" target="_blank" class="text-pink-600 underline">Link</a>` : '-'}</td>
-                    <td class="py-3 px-4">${t.presLink ? `<a href="${t.presLink}" target="_blank" class="text-indigo-600 underline">Slides</a>` : '-'}</td>
-                    <td class="py-3 px-4"><input type="text" value="${t.remarks || ''}" onblur="updateRemarks('${t.id}', this.value)" class="w-full bg-slate-50 border rounded px-2 py-1 text-xs"></td>
-                    <td class="py-3 px-4 text-right space-x-1 whitespace-nowrap">
-                        <button onclick="openTaskModal('${t.id}')" class="p-1.5 bg-slate-100 rounded-lg"><i class="fa-solid fa-pen text-xs"></i></button>
-                        <button onclick="deleteTask('${t.id}')" class="p-1.5 bg-rose-50 text-rose-600 rounded-lg"><i class="fa-solid fa-trash text-xs"></i></button>
-                    </td>
-                </tr>
-            `).join('');
+            let html = '';
+            filtered.forEach(t => {
+                html += `
+                    <tr class="hover:bg-slate-50">
+                        <td class="py-3 px-4"><select onchange="updateStatus('${t.id}', this.value)" class="text-[11px] font-semibold rounded-lg px-2 py-1 border"><option value="ON GOING" ${t.status === 'ON GOING'?'selected':''}>ON GOING</option><option value="COMPLETED" ${t.status === 'COMPLETED'?'selected':''}>COMPLETED</option><option value="RESCHED" ${t.status === 'RESCHED'?'selected':''}>RESCHED</option><option value="CANCELED" ${t.status === 'CANCELED'?'selected':''}>CANCELED</option></select></td>
+                        <td class="py-3 px-4"><span class="px-2 py-0.5 rounded border text-[10px]">${t.urgency}</span></td>
+                        <td class="py-3 px-4 font-semibold text-slate-900">${t.activity}</td>
+                        <td class="py-3 px-4 text-slate-500">${t.date}</td>
+                        <td class="py-3 px-4"><span class="bg-slate-100 px-2 py-0.5 rounded text-[10px]">${t.category}</span></td>
+                        <td class="py-3 px-4">${t.link ? `<a href="${t.link}" target="_blank" class="text-pink-600 underline">Link</a>` : '-'}</td>
+                        <td class="py-3 px-4">${t.presLink ? `<a href="${t.presLink}" target="_blank" class="text-indigo-600 underline">Slides</a>` : '-'}</td>
+                        <td class="py-3 px-4"><input type="text" value="${t.remarks || ''}" onblur="updateRemarks('${t.id}', this.value)" class="bg-slate-50 border rounded px-2 py-1 text-xs w-full"></td>
+                        <td class="py-3 px-4 text-right"><button onclick="deleteTask('${t.id}')" class="text-rose-600"><i class="fa-solid fa-trash text-xs"></i></button></td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
         }
 
         function renderCalendar() {
@@ -860,12 +780,11 @@
 
             const firstDayIndex = new Date(year, month, 1).getDay();
             const lastDay = new Date(year, month + 1, 0).getDate();
-            const prevLastDay = new Date(year, month, 0).getDate();
             const todayStr = new Date().toISOString().split('T')[0];
 
             let daysHtml = '';
             for(let i = firstDayIndex; i > 0; i--) {
-                daysHtml += `<div class="bg-slate-50/50 min-h-[90px] p-2 text-slate-300 text-xs border border-slate-100"><span>${prevLastDay - i + 1}</span></div>`;
+                daysHtml += `<div class="bg-slate-50/50 min-h-[90px] p-2 text-slate-300 text-xs border border-slate-100"></div>`;
             }
 
             for(let day = 1; day <= lastDay; day++) {
@@ -874,30 +793,29 @@
                 const dateString = `${year}-${monthStr}-${dayStr}`;
                 const isToday = dateString === todayStr;
 
+                // Gather tasks + income/expenses/forecasts
                 const dayTasks = tasks.filter(t => t.date === dateString);
-                const dayTxns = budgetData.transactions.filter(t => t.date === dateString);
+                const dayTxns = budgetData.transactions.filter(tx => tx.date === dateString);
                 const dayForecasts = budgetData.forecasts.filter(f => f.date === dateString);
 
                 let pills = '';
                 dayTasks.forEach(t => {
-                    pills += `<div class="text-[9px] px-1.5 py-0.5 rounded truncate bg-pink-500 text-white font-medium mt-0.5" title="Task: ${t.activity}">Task: ${t.activity}</div>`;
+                    pills += `<div class="text-[9px] px-1.5 py-0.5 rounded truncate bg-pink-500 text-white font-medium mt-0.5" title="${t.activity}">Task: ${t.activity}</div>`;
                 });
                 dayTxns.forEach(tx => {
-                    const bg = tx.type.startsWith('INCOME') ? 'bg-emerald-500' : 'bg-rose-500';
-                    pills += `<div class="text-[9px] px-1.5 py-0.5 rounded truncate ${bg} text-white font-medium mt-0.5" title="${tx.title}: ₱${tx.amount}">${tx.title}: ₱${tx.amount}</div>`;
+                    const bg = tx.type.startsWith('INCOME') ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white';
+                    pills += `<div class="text-[9px] px-1.5 py-0.5 rounded truncate ${bg} font-medium mt-0.5" title="${tx.title}: ${tx.amount}">${tx.title}</div>`;
                 });
                 dayForecasts.forEach(f => {
-                    pills += `<div class="text-[9px] px-1.5 py-0.5 rounded truncate bg-amber-500 text-white font-medium mt-0.5" title="Forecast: ${f.title} ₱${f.amount}">Fcst: ${f.title}</div>`;
+                    pills += `<div class="text-[9px] px-1.5 py-0.5 rounded truncate bg-amber-500 text-white font-medium mt-0.5" title="Forecast: ${f.title}">Fc: ${f.title}</div>`;
                 });
 
                 daysHtml += `
-                    <div class="bg-white min-h-[100px] p-2 text-xs border border-slate-100 flex flex-col justify-between ${isToday ? 'bg-pink-50/40 ring-1 ring-pink-500' : ''}">
+                    <div class="bg-white min-h-[90px] p-1.5 text-xs border border-slate-100 flex flex-col justify-between ${isToday ? 'bg-pink-50/40 ring-1 ring-pink-500' : ''}">
                         <div class="flex items-center justify-between">
                             <span class="font-bold ${isToday ? 'bg-pink-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px]' : 'text-slate-700'}">${day}</span>
                         </div>
-                        <div class="overflow-y-auto max-h-24 space-y-0.5 mt-1">
-                            ${pills}
-                        </div>
+                        <div class="overflow-y-auto max-h-20 space-y-0.5 mt-1">${pills}</div>
                     </div>
                 `;
             }
@@ -907,158 +825,11 @@
         function changeMonth(dir) { currentDate.setMonth(currentDate.getMonth() + dir); renderCalendar(); }
         function goToCurrentMonth() { currentDate = new Date(); renderCalendar(); }
 
-        function formatPHP(num) { return '₱' + Number(num).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
-        function saveBudget() { localStorage.setItem('budgetAppV16', JSON.stringify(budgetData)); renderAll(); }
-
-        function updateTransactionTypeOptions() {
-            const category = document.getElementById('tCategory').value;
-            const typeSelect = document.getElementById('tType');
-            typeSelect.innerHTML = '';
-            if (category === 'SALARY') typeSelect.innerHTML = '<option value="INCOME - SALARY">INCOME - SALARY</option>';
-            else if (category === 'LOAN') typeSelect.innerHTML = '<option value="INCOME - LOAN">INCOME - LOAN</option><option value="EXPENSE - LOAN">EXPENSE - LOAN</option>';
-            else if (category === 'SAVINGS') typeSelect.innerHTML = '<option value="INCOME - SAVINGS WITHDRAWAL">INCOME - SAVINGS WITHDRAWAL</option><option value="EXPENSE - SAVINGS">EXPENSE - SAVINGS</option>';
-            else typeSelect.innerHTML = '<option value="INCOME - GENERAL">INCOME - GENERAL</option><option value="EXPENSE - GENERAL">EXPENSE - GENERAL</option>';
-        }
-
-        function addTransaction() {
-            const title = document.getElementById('tTitle').value;
-            const amount = parseFloat(document.getElementById('tAmount').value);
-            const category = document.getElementById('tCategory').value;
-            const type = document.getElementById('tType').value;
-            const date = document.getElementById('tDate').value || new Date().toISOString().split('T')[0];
-            if(title && amount > 0) {
-                budgetData.transactions.unshift({id: Date.now(), title, amount, category, type, date});
-                closeModal('transactionModal');
-                saveBudget();
-            }
-        }
-        function deleteTransaction(id) { budgetData.transactions = budgetData.transactions.filter(t => t.id !== id); saveBudget(); }
-
-        function addSavingsAccount() {
-            const name = document.getElementById('sName').value;
-            const initial = parseFloat(document.getElementById('sInitial').value) || 0;
-            const interest = parseFloat(document.getElementById('sInterest').value) || 0;
-            if(name) {
-                budgetData.savings.push({id: Date.now(), name, initial, balance: initial, interest, withdrawal: 0, deposit: 0, date: new Date().toISOString().split('T')[0]});
-                closeModal('savingsModal');
-                saveBudget();
-            }
-        }
-        function depositSavings(id) {
-            const amt = parseFloat(prompt("Deposit amount:"));
-            const sav = budgetData.savings.find(s => s.id === id);
-            if(sav && amt > 0) {
-                sav.balance += amt; sav.deposit += amt;
-                budgetData.transactions.unshift({id: Date.now(), title: `Deposit: ${sav.name}`, amount: amt, category: 'SAVINGS', type: 'EXPENSE - SAVINGS', date: new Date().toISOString().split('T')[0]});
-                saveBudget();
-            }
-        }
-        function withdrawSavings(id) {
-            const amt = parseFloat(prompt("Withdrawal amount:"));
-            const sav = budgetData.savings.find(s => s.id === id);
-            if(sav && amt > 0 && amt <= sav.balance) {
-                sav.balance -= amt; sav.withdrawal += amt;
-                budgetData.transactions.unshift({id: Date.now(), title: `Withdrawal: ${sav.name}`, amount: amt, category: 'SAVINGS', type: 'INCOME - SAVINGS WITHDRAWAL', date: new Date().toISOString().split('T')[0]});
-                saveBudget();
-            }
-        }
-        function deleteSavings(id) { budgetData.savings = budgetData.savings.filter(s => s.id !== id); saveBudget(); }
-
-        function toggleFreqFields() {
-            const freq = document.querySelector('input[name="lFreq"]:checked').value;
-            if(freq === 'SEMIMONTHLY') {
-                document.getElementById('monthlyDateContainer').classList.add('hidden');
-                document.getElementById('semiMonthlyDateContainer').classList.remove('hidden');
-            } else {
-                document.getElementById('monthlyDateContainer').classList.remove('hidden');
-                document.getElementById('semiMonthlyDateContainer').classList.add('hidden');
-            }
-        }
-
-        function addLoan() {
-            const name = document.getElementById('lName').value;
-            const principal = parseFloat(document.getElementById('lAmount').value);
-            const type = document.getElementById('lType').value;
-            const months = parseInt(document.getElementById('lMonths').value) || 1;
-            const installment = parseFloat(document.getElementById('lInstallment').value) || 0;
-            const freq = document.querySelector('input[name="lFreq"]:checked').value;
-            if(name && principal > 0 && installment > 0) {
-                budgetData.loans.push({id: Date.now(), name, principal, remaining: principal, installment, type, months, freq, dueDates: 'Monthly'});
-                closeModal('loanModal');
-                saveBudget();
-            }
-        }
-        function deleteLoan(id) { budgetData.loans = budgetData.loans.filter(l => l.id !== id); saveBudget(); }
-
-        function addForecast() {
-            const fType = document.getElementById('fTypeSelect').value;
-            const category = document.getElementById('fCategorySelect').value;
-            const title = document.getElementById('fTitle').value;
-            const amount = parseFloat(document.getElementById('fAmount').value);
-            const date = document.getElementById('fDate').value || new Date().toISOString().split('T')[0];
-            if(title && amount > 0) {
-                budgetData.forecasts.push({id: Date.now(), status: 'FORECASTED', type: fType, category, title, amount, date});
-                closeModal('forecastModal');
-                saveBudget();
-            }
-        }
-        function updateForecastStatus(id, st) {
-            const f = budgetData.forecasts.find(x => x.id === id);
-            if(f) { f.status = st; saveBudget(); }
-        }
-        function deleteForecast(id) { budgetData.forecasts = budgetData.forecasts.filter(f => f.id !== id); saveBudget(); }
-
-        function updateCharts() {
-            const bMonth = document.getElementById('budgetFilterMonth').value;
-            const bYear = document.getElementById('budgetFilterYear').value;
-            let filteredTxns = [...budgetData.transactions];
-            let filteredForecasts = [...budgetData.forecasts];
-
-            if(bMonth !== 'ALL') {
-                filteredTxns = filteredTxns.filter(t => t.date && t.date.startsWith(`${bYear}-${bMonth}`));
-                filteredForecasts = filteredForecasts.filter(f => f.date && f.date.startsWith(`${bYear}-${bMonth}`));
-            } else {
-                filteredTxns = filteredTxns.filter(t => t.date && t.date.startsWith(`${bYear}`));
-                filteredForecasts = filteredForecasts.filter(f => f.date && f.date.startsWith(`${bYear}`));
-            }
-
-            const income = filteredTxns.filter(t => t.type.startsWith('INCOME')).reduce((a, t) => a + t.amount, 0);
-            const expense = filteredTxns.filter(t => t.type.startsWith('EXPENSE')).reduce((a, t) => a + t.amount, 0);
-            const totalForecast = filteredForecasts.filter(f => f.status === 'FORECASTED' && f.type === 'EXPENSE').reduce((a, f) => a + f.amount, 0);
-
-            const createOrUpdate = (id, type, chartData, options) => {
-                const ctx = document.getElementById(id);
-                if(!ctx) return;
-                if(charts[id]) charts[id].destroy();
-                charts[id] = new Chart(ctx.getContext('2d'), { type, data: chartData, options: { responsive: true, ...options } });
-            };
-
-            const ieForecastData = { labels: ['Income', 'Expense', 'Forecasted'], datasets: [{ data: [income, expense, totalForecast], backgroundColor: ['#10B981', '#EF4444', '#F59E0B'] }] };
-            const loanData = { labels: budgetData.loans.map(l => l.name), datasets: [{ label: 'Remaining', data: budgetData.loans.map(l => l.remaining), backgroundColor: '#F97316' }] };
-            const savData = { labels: budgetData.savings.map(s => s.name), datasets: [{ label: 'Balance', data: budgetData.savings.map(s => s.balance), backgroundColor: '#3B82F6' }] };
-
-            createOrUpdate('budgetIEChart', 'bar', ieForecastData, { plugins: { legend: { display: false } } });
-            createOrUpdate('budgetLoanChart', 'bar', loanData, {});
-            createOrUpdate('budgetSavingsChart', 'bar', savData, { plugins: { legend: { display: false } } });
-            createOrUpdate('loansPageChart', 'bar', loanData, {});
-            createOrUpdate('savingsPageChart', 'bar', savData, { plugins: { legend: { display: false } } });
-        }
-
         function initChart() {
             const ctx = document.getElementById('statusChart').getContext('2d');
-            const todayStr = new Date().toISOString().split('T')[0];
-            const todayTasks = tasks.filter(t => t.date === todayStr);
             statusChartInstance = new Chart(ctx, {
                 type: 'doughnut',
-                data: {
-                    labels: ['Completed', 'On Going', 'Rescheduled', 'Canceled'],
-                    datasets: [{ data: [
-                        todayTasks.filter(t => t.status === 'COMPLETED').length,
-                        todayTasks.filter(t => t.status === 'ON GOING').length,
-                        todayTasks.filter(t => t.status === 'RESCHED').length,
-                        todayTasks.filter(t => t.status === 'CANCELED').length
-                    ], backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#f43f5e'], borderWidth: 0 }]
-                },
+                data: { labels: ['Completed', 'On Going', 'Rescheduled', 'Canceled'], datasets: [{ data: [0,0,0,0], backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#f43f5e'], borderWidth: 0 }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } }
             });
         }
@@ -1076,152 +847,90 @@
             statusChartInstance.update();
         }
 
-        function exportTasksToExcel() {
-            let csv = 'Status,Urgency,Activity,Date,Category,Remarks\r\n';
-            tasks.forEach(t => {
-                csv += `"${t.status}","${t.urgency}","${t.activity}","${t.date}","${t.category}","${t.remarks || ''}"\r\n`;
-            });
+        function updateCharts() {
+            const income = budgetData.transactions.filter(t => t.type.startsWith('INCOME')).reduce((a, t) => a + t.amount, 0);
+            const expense = budgetData.transactions.filter(t => t.type.startsWith('EXPENSE')).reduce((a, t) => a + t.amount, 0);
+            const createOrUpdate = (id, type, data, options) => {
+                const ctx = document.getElementById(id);
+                if(!ctx) return;
+                if(charts[id]) charts[id].destroy();
+                charts[id] = new Chart(ctx.getContext('2d'), { type, data, options: { responsive: true, ...options } });
+            };
+            createOrUpdate('budgetIEChart', 'bar', { labels: ['Income', 'Expense'], datasets: [{ data: [income, expense], backgroundColor: ['#10B981', '#EF4444'] }] }, { plugins: { legend: { display: false } } });
+            createOrUpdate('budgetLoanChart', 'bar', { labels: budgetData.loans.map(l => l.name), datasets: [{ label: 'Remaining', data: budgetData.loans.map(l => l.remaining), backgroundColor: '#F97316' }] }, {});
+            createOrUpdate('budgetSavingsChart', 'bar', { labels: budgetData.savings.map(s => s.name), datasets: [{ label: 'Balance', data: budgetData.savings.map(s => s.balance), backgroundColor: '#3B82F6' }] }, { plugins: { legend: { display: false } } });
+        }
+
+        function renderAll() {
+            document.getElementById('transactionTableBody').innerHTML = budgetData.transactions.map(t => `
+                <tr class="border-b">
+                    <td class="p-2">${t.date}</td><td class="p-2 font-medium">${t.title}</td>
+                    <td class="p-2 font-bold ${t.type.startsWith('INCOME') ? 'text-green-600' : 'text-red-600'}">${formatPHP(t.amount)}</td>
+                    <td class="p-2">${t.category}</td><td class="p-2">${t.type}</td>
+                    <td class="p-2 text-center"><button onclick="deleteTransaction(${t.id})" class="text-red-500"><i class="fas fa-trash"></i></button></td>
+                </tr>
+            `).join('') || '<tr><td colspan="6" class="p-3 text-center text-gray-400">No transactions recorded.</td></tr>';
+
+            document.getElementById('bankSavingsTableBody').innerHTML = budgetData.savings.map(s => `
+                <tr class="border-b">
+                    <td class="p-2">${s.date}</td><td class="p-2 font-medium">${s.name}</td>
+                    <td class="p-2">${formatPHP(s.initial)}</td><td class="p-2 font-bold text-indigo-600">${formatPHP(s.balance)}</td>
+                    <td class="p-2 text-center"><button onclick="deleteSavings(${s.id})" class="text-red-500"><i class="fas fa-trash"></i></button></td>
+                </tr>
+            `).join('') || '<tr><td colspan="5" class="p-3 text-center text-gray-400">No savings accounts.</td></tr>';
+
+            document.getElementById('activeLoansTableBody').innerHTML = budgetData.loans.map(l => `
+                <tr class="border-b">
+                    <td class="p-2 font-medium">${l.name}</td><td class="p-2">${formatPHP(l.principal)}</td>
+                    <td class="p-2 font-bold text-red-600">${formatPHP(l.remaining)}</td>
+                    <td class="p-2 text-center"><button onclick="deleteLoan(${l.id})" class="text-red-500"><i class="fas fa-trash"></i></button></td>
+                </tr>
+            `).join('') || '<tr><td colspan="4" class="p-3 text-center text-gray-400">No active loans.</td></tr>';
+
+            updateCharts();
+        }
+
+        function exportToExcel() {
+            let csv = 'Status,Urgency,Activity,Date,Category\r\n';
+            tasks.forEach(t => { csv += `"${t.status}","${t.urgency}","${t.activity}","${t.date}","${t.category}"\r\n`; });
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = url; a.download = 'tine_tasks.csv';
-            a.click();
+            a.href = url; a.download = 'tasks_export.csv'; a.click();
         }
 
-        function exportToExcelWithCharts() {
-            alert('Excel report generated successfully.');
-        }
-
-        function downloadFullBackup() {
-            const fullData = { appTitle, tasks, budgetData };
+        function downloadBackup() {
+            const fullData = { tasks, budgetData };
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fullData, null, 2));
             const a = document.createElement('a');
-            a.href = dataStr; a.download = `tine_productivity_backup_${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
+            a.href = dataStr; a.download = 'task_budget_hub_backup.json'; a.click();
         }
 
-        function restoreFullBackup(event) {
+        function restoreBackup(event) {
             const file = event.target.files[0];
             if(!file) return;
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
                     const parsed = JSON.parse(e.target.result);
-                    if(parsed.tasks && parsed.budgetData) {
-                        tasks = parsed.tasks;
-                        budgetData = parsed.budgetData;
-                        if(parsed.appTitle) {
-                            appTitle = parsed.appTitle;
-                            localStorage.setItem('tine_app_title', appTitle);
-                        }
-                        localStorage.setItem('tine_tasks', JSON.stringify(tasks));
-                        localStorage.setItem('budgetAppV16', JSON.stringify(budgetData));
-                        applyAppTitle();
-                        renderAll();
-                        alert('Backup restored successfully!');
-                    } else {
-                        alert('Invalid backup format.');
-                    }
-                } catch(err) { alert('Error parsing backup file.'); }
+                    if(parsed.tasks) tasks = parsed.tasks;
+                    if(parsed.budgetData) budgetData = parsed.budgetData;
+                    saveAndRefresh();
+                    saveData();
+                    alert('Backup restored successfully!');
+                } catch(err) { alert('Error reading backup file.'); }
             };
             reader.readAsText(file);
         }
 
-        function addCustomCategory() {
-            const input = document.getElementById('new-category-input');
-            const val = input.value.trim().toUpperCase();
-            if(val && !customCategories.includes(val)) {
-                customCategories.push(val);
-                localStorage.setItem('tine_custom_categories', JSON.stringify(customCategories));
-                input.value = '';
-                initCustomCategoriesUI();
-            }
-        }
-
-        function initCustomCategoriesUI() {
-            const listEl = document.getElementById('category-list');
-            listEl.innerHTML = customCategories.map(c => `<span class="bg-slate-100 text-slate-700 text-xs px-3 py-1 rounded-xl font-medium">${c}</span>`).join('');
-        }
-
         function clearAllData() {
-            if(confirm('WARNING: This will clear all data. Proceed?')) {
-                tasks = []; budgetData = { transactions: [], savings: [], loans: [], forecasts: [], categories: ['GENERAL'] };
-                saveAndRefreshTasks();
-                saveBudget();
+            if(confirm('WARNING: This will permanently delete all tasks and budget data.')) {
+                tasks = [];
+                budgetData = { appTitle: "Task & Budget Hub", transactions: [], savings: [], loans: [], forecasts: [], categories: [] };
+                saveAndRefresh();
+                saveData();
                 alert('All data cleared.');
             }
-        }
-
-        function sendFeedbackEmail(e) {
-            e.preventDefault();
-            const email = document.getElementById('feedback-email').value;
-            const message = document.getElementById('feedback-message').value;
-            window.location.href = `mailto:kristine.aquino2019@gmail.com?subject=Feedback&body=From:${email}%0A${message}`;
-        }
-
-        function renderAll() {
-            renderTasks();
-            renderCalendar();
-            initChart();
-            updateCharts();
-
-            document.getElementById('transactionTableBody').innerHTML = budgetData.transactions.map(t => `
-                <tr class="border-b hover:bg-gray-50">
-                    <td class="p-2">${t.date}</td>
-                    <td class="p-2 font-medium">${t.title}</td>
-                    <td class="p-2 font-bold ${t.type.startsWith('INCOME') ? 'text-green-600' : 'text-red-600'}">${formatPHP(t.amount)}</td>
-                    <td class="p-2">${t.category}</td>
-                    <td class="p-2">${t.type}</td>
-                    <td class="p-2 text-center"><button onclick="deleteTransaction(${t.id})" class="text-red-500"><i class="fas fa-trash"></i></button></td>
-                </tr>
-            `).join('') || '<tr><td colspan="6" class="p-3 text-center text-gray-400">No transactions recorded.</td></tr>';
-
-            document.getElementById('bankSavingsTableBody').innerHTML = budgetData.savings.map(s => `
-                <tr class="border-b hover:bg-gray-50">
-                    <td class="p-2">${s.date}</td>
-                    <td class="p-2 font-medium">${s.name}</td>
-                    <td class="p-2">${formatPHP(s.initial)}</td>
-                    <td class="p-2 font-bold text-indigo-600">${formatPHP(s.balance)}</td>
-                    <td class="p-2 text-amber-600">${formatPHP(s.withdrawal)}</td>
-                    <td class="p-2 text-green-600">${formatPHP(s.deposit)}</td>
-                    <td class="p-2">${s.interest}%</td>
-                    <td class="p-2 text-center space-x-1">
-                        <button onclick="depositSavings(${s.id})" class="bg-green-100 text-green-700 px-1.5 py-0.5 rounded text-[10px]">Dep</button>
-                        <button onclick="withdrawSavings(${s.id})" class="bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded text-[10px]">W/D</button>
-                        <button onclick="deleteSavings(${s.id})" class="text-red-500"><i class="fas fa-trash"></i></button>
-                    </td>
-                </tr>
-            `).join('') || '<tr><td colspan="8" class="p-3 text-center text-gray-400">No bank savings.</td></tr>';
-
-            document.getElementById('activeLoansTableBody').innerHTML = budgetData.loans.map(l => `
-                <tr class="border-b hover:bg-gray-50">
-                    <td class="p-2 font-medium">${l.name}</td>
-                    <td class="p-2">${formatPHP(l.principal)}</td>
-                    <td class="p-2">${formatPHP(l.installment)}</td>
-                    <td class="p-2 font-bold text-red-600">${formatPHP(l.remaining)}</td>
-                    <td class="p-2">${l.type}</td>
-                    <td class="p-2">${l.months} mos</td>
-                    <td class="p-2">${l.freq}</td>
-                    <td class="p-2">${l.dueDates}</td>
-                    <td class="p-2 text-center"><button onclick="deleteLoan(${l.id})" class="text-red-500"><i class="fas fa-trash"></i></button></td>
-                </tr>
-            `).join('') || '<tr><td colspan="9" class="p-3 text-center text-gray-400">No active loans.</td></tr>';
-
-            document.getElementById('forecastContainer').innerHTML = budgetData.forecasts.map(f => `
-                <div class="bg-white p-4 rounded-xl shadow flex justify-between items-center text-xs">
-                    <div>
-                        <span class="font-bold text-indigo-600">${f.date}</span> — <b>${f.title}</b> (${f.type}: ${formatPHP(f.amount)})
-                    </div>
-                    <div class="space-x-2">
-                        <select onchange="updateForecastStatus(${f.id}, this.value)" class="border p-1 rounded">
-                            <option value="FORECASTED" ${f.status === 'FORECASTED' ? 'selected' : ''}>FORECASTED</option>
-                            <option value="PAID" ${f.status === 'PAID' ? 'selected' : ''}>PAID</option>
-                            <option value="CANCELED" ${f.status === 'CANCELED' ? 'selected' : ''}>CANCELED</option>
-                        </select>
-                        <button onclick="deleteForecast(${f.id})" class="text-red-500"><i class="fas fa-trash"></i></button>
-                    </div>
-                </div>
-            `).join('') || '<div class="bg-white p-4 rounded-xl shadow text-center text-xs text-gray-400">No forecasts recorded.</div>';
         }
     </script>
 </body>

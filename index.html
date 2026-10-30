@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ate Tine's Productivity & Budget Hub</title>
+    <title id="page-title">Ate Tine's Productivity & Budget Hub</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
@@ -25,7 +25,7 @@
                     <i class="fa-solid fa-chart-pie"></i>
                 </div>
                 <div>
-                    <h1 class="text-base font-bold leading-tight">Ate Tine's Hub</h1>
+                    <h1 id="header-hub-title" class="text-base font-bold leading-tight">Ate Tine's Hub</h1>
                     <p class="text-[10px] text-indigo-200">Manila, Philippines Time</p>
                 </div>
             </div>
@@ -341,6 +341,18 @@
         <!-- ================= 7. SETTINGS PAGE ================= -->
         <div id="tab-settings" class="tab-content space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Hub Title Settings -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                    <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
+                        <i class="fa-solid fa-heading text-indigo-600"></i><span>Hub Title Settings</span>
+                    </h3>
+                    <p class="text-xs text-slate-500">Customize the display name of your hub across the header and browser tab.</p>
+                    <div class="flex gap-2 pt-2">
+                        <input type="text" id="hubTitleInput" placeholder="Enter hub title..." class="flex-1 bg-slate-50 border border-slate-200 text-xs rounded-xl px-3 py-2 outline-none focus:border-indigo-500">
+                        <button onclick="updateHubTitle()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition-all">Save Title</button>
+                    </div>
+                </div>
+
                 <!-- Backup & Restore -->
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
                     <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
@@ -589,11 +601,13 @@
         ];
 
         let customCategories = JSON.parse(localStorage.getItem('tine_custom_categories')) || ['PROJECT KRAFTINE'];
+        let hubTitle = localStorage.getItem('tine_hub_title') || "Ate Tine's Hub";
         let charts = {};
         let statusChartInstance = null;
         let currentDate = new Date();
 
         document.addEventListener('DOMContentLoaded', () => {
+            applyHubTitle();
             initYearDropdowns();
             initCustomCategoriesUI();
             updateTodayBadge();
@@ -610,6 +624,23 @@
         function saveData() {
             localStorage.setItem('budgetAppV15', JSON.stringify(data));
             renderAll();
+        }
+
+        function applyHubTitle() {
+            document.getElementById('header-hub-title').innerText = hubTitle;
+            document.getElementById('page-title').innerText = hubTitle + " & Budget Hub";
+            const input = document.getElementById('hubTitleInput');
+            if(input) input.value = hubTitle;
+        }
+
+        function updateHubTitle() {
+            const val = document.getElementById('hubTitleInput').value.trim();
+            if(val) {
+                hubTitle = val;
+                localStorage.setItem('tine_hub_title', hubTitle);
+                applyHubTitle();
+                alert('Hub title updated successfully!');
+            }
         }
 
         function switchTab(tabId) {
@@ -1115,6 +1146,7 @@
                 const dayForecasts = data.forecasts.filter(f => f.date === dateString && f.status === 'FORECASTED');
 
                 let pillsHtml = '';
+                
                 dayTasks.forEach(t => {
                     const colorBg = t.category === 'WORK' ? 'bg-pink-500 text-white' : t.category === 'PERSONAL' ? 'bg-emerald-500 text-white' : t.category === 'SCHOOL' ? 'bg-amber-500 text-white' : 'bg-blue-500 text-white';
                     pillsHtml += `<div class="text-[9px] px-1.5 py-0.5 rounded truncate ${colorBg} font-medium mt-0.5" title="Task: ${t.activity}"><i class="fa-solid fa-list-check mr-1"></i>${t.activity}</div>`;
@@ -1185,7 +1217,7 @@
         }
 
         function backupAllData() {
-            const fullHub = { budget: data, tasks: tasks, customCategories: customCategories };
+            const fullHub = { budget: data, tasks: tasks, customCategories: customCategories, hubTitle: hubTitle };
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fullHub, null, 2));
             const a = document.createElement('a'); a.href = dataStr; a.download = `ate_tine_hub_backup_${new Date().toISOString().split('T')[0]}.json`;
             document.body.appendChild(a); a.click(); a.remove();
@@ -1201,7 +1233,11 @@
                     if(parsed.budget) data = parsed.budget;
                     if(parsed.tasks) tasks = parsed.tasks;
                     if(parsed.customCategories) customCategories = parsed.customCategories;
-                    saveData(); saveAndRefreshTasks();
+                    if(parsed.hubTitle) {
+                        hubTitle = parsed.hubTitle;
+                        localStorage.setItem('tine_hub_title', hubTitle);
+                    }
+                    saveData(); saveAndRefreshTasks(); applyHubTitle();
                     alert('Hub data restored successfully!');
                 } catch(err) { alert('Error reading backup file.'); }
             };

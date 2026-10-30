@@ -8,6 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS (XLSX) for Multi-Tab Excel Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -32,7 +34,7 @@
 
             <!-- Top Header Actions -->
             <div class="flex items-center space-x-2">
-                <button onclick="exportToExcelWithCharts()" class="bg-indigo-700 hover:bg-indigo-800 px-2.5 py-1.5 rounded-lg text-xs font-semibold shadow transition-all flex items-center space-x-1" title="Export Excel with Charts & Data">
+                <button onclick="exportToExcelWithCharts()" class="bg-indigo-700 hover:bg-indigo-800 px-2.5 py-1.5 rounded-lg text-xs font-semibold shadow transition-all flex items-center space-x-1" title="Export Excel with All Tabs & Charts">
                     <i class="fas fa-file-excel"></i><span class="hidden sm:inline"> Export Excel</span>
                 </button>
                 <button onclick="backupAllData()" class="bg-emerald-600 hover:bg-emerald-700 px-2.5 py-1.5 rounded-lg text-xs font-semibold shadow transition-all flex items-center space-x-1" title="Backup All Data File">
@@ -908,12 +910,84 @@
             createOrUpdate('budgetSavingsChart', 'bar', savData, { plugins: { legend: { display: false }, title: { display: true, text: 'Savings Balances' } } });
         }
 
+        // Multi-Tab Excel Download with SheetJS
         function exportToExcelWithCharts() {
-            const ieImg = charts['budgetIEChart'] ? charts['budgetIEChart'].toBase64Image() : '';
-            let html = `<html><head><meta charset="utf-8"><title>Report</title></head><body><h2>Budget Report</h2><img src="${ieImg}"/></body></html>`;
-            const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = 'budget_report.xls'; a.click();
+            const wb = XLSX.utils.book_new();
+
+            // Tab 1: Budget Page
+            const budgetRows = [
+                ["Ate Tine's Budget & Transactions Summary"],
+                [],
+                ["Date", "Title", "Amount (PHP)", "Category", "Type"]
+            ];
+            getFilteredBudgetTransactions().forEach(t => {
+                budgetRows.push([t.date, t.title, t.amount, t.category, t.type]);
+            });
+            const ws1 = XLSX.utils.aoa_to_sheet(budgetRows);
+            XLSX.utils.book_append_sheet(wb, ws1, "Budget Page");
+
+            // Tab 2: Savings Page
+            const savingsRows = [
+                ["Ate Tine's Bank Savings Accounts"],
+                [],
+                ["Date", "Bank / Account Name", "Initial Balance", "Running Balance", "Withdrawals", "Deposits", "Interest Rate (%)"]
+            ];
+            data.savings.forEach(s => {
+                savingsRows.push([s.date, s.name, s.initial, s.balance, s.withdrawal, s.deposit, s.interest]);
+            });
+            const ws2 = XLSX.utils.aoa_to_sheet(savingsRows);
+            XLSX.utils.book_append_sheet(wb, ws2, "Savings Page");
+
+            // Tab 3: Loans
+            const loanRows = [
+                ["Ate Tine's Active Loans"],
+                [],
+                ["Loan Name", "Principal Amount", "Installment", "Remaining Balance", "Type", "Terms (Mos)", "Frequency", "Start Date", "Due Dates"]
+            ];
+            data.loans.forEach(l => {
+                loanRows.push([l.name, l.principal, l.installment, l.remaining, l.type, l.months, l.freq, l.startDate || '', l.dueDates]);
+            });
+            const ws3 = XLSX.utils.aoa_to_sheet(loanRows);
+            XLSX.utils.book_append_sheet(wb, ws3, "Loans");
+
+            // Tab 4: Forecast
+            const forecastRows = [
+                ["Ate Tine's Forecast Manager"],
+                [],
+                ["Status", "Date", "Title", "Amount (PHP)", "Category", "Type"]
+            ];
+            data.forecasts.forEach(f => {
+                forecastRows.push([f.status, f.date, f.title, f.amount, f.category, f.type]);
+            });
+            const ws4 = XLSX.utils.aoa_to_sheet(forecastRows);
+            XLSX.utils.book_append_sheet(wb, ws4, "Forecast");
+
+            // Tab 5: Task
+            const taskRows = [
+                ["Ate Tine's Task Planner"],
+                [],
+                ["Status", "Urgency", "Activity Name", "Date", "Schedule Type", "Category", "Remarks"]
+            ];
+            tasks.forEach(ts => {
+                taskRows.push([ts.status, ts.urgency, ts.activity, ts.date, ts.scheduleType, ts.category, ts.remarks || '']);
+            });
+            const ws5 = XLSX.utils.aoa_to_sheet(taskRows);
+            XLSX.utils.book_append_sheet(wb, ws5, "Task");
+
+            // Tab 6: Calendar
+            const calRows = [
+                ["Ate Tine's Calendar Summary"],
+                [],
+                ["Date", "Item Title", "Item Type", "Category / Details"]
+            ];
+            tasks.forEach(ts => calRows.push([ts.date, ts.activity, 'Task', ts.category]));
+            data.transactions.forEach(tx => calRows.push([tx.date, tx.title, 'Transaction', tx.type]));
+            data.forecasts.forEach(fc => calRows.push([fc.date, fc.title, 'Forecast', fc.type]));
+            const ws6 = XLSX.utils.aoa_to_sheet(calRows);
+            XLSX.utils.book_append_sheet(wb, ws6, "Calendar");
+
+            // Save file
+            XLSX.writeFile(wb, `Ate_Tines_Hub_Report_${new Date().toISOString().split('T')[0]}.xlsx`);
         }
 
         function renderAll() {

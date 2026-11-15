@@ -664,6 +664,8 @@
             renderTasks();
             renderCalendar();
             initChart();
+            // Keep the purge running if the page stays open past midnight
+            setInterval(() => { if (purgeOldPaidForecasts() > 0) { renderAll(); renderCalendar(); } }, 60 * 60 * 1000);
         });
 
         function formatPHP(num) {
@@ -1132,7 +1134,21 @@
             XLSX.writeFile(wb, `Ate_Tines_Hub_Report_${todayISO()}.xlsx`);
         }
 
+        // Auto-delete PAID forecasts dated 5+ days before today (e.g. today 11/15 -> 11/10 and older).
+        // FORECASTED (and CANCELED) entries are never auto-deleted. Transactions are kept.
+        function purgeOldPaidForecasts() {
+            const c = new Date();
+            c.setDate(c.getDate() - 5);
+            const cutoff = ymd(c);
+            const before = data.forecasts.length;
+            data.forecasts = data.forecasts.filter(f => !(f.status === 'PAID' && f.date && f.date <= cutoff));
+            const removed = before - data.forecasts.length;
+            if (removed > 0) localStorage.setItem('budgetAppV15', JSON.stringify(data));
+            return removed;
+        }
+
         function renderAll() {
+            purgeOldPaidForecasts();
             // Render Budget Transactions based on filter
             const filteredTxns = getFilteredBudgetTransactions();
             document.getElementById('transactionTableBody').innerHTML = filteredTxns.map(t => `
@@ -1201,14 +1217,12 @@
                 const parts = f.date ? f.date.split('-') : ['2026', '01', '01'];
                 let year = parseInt(parts[0], 10), month = parseInt(parts[1], 10), day = parseInt(parts[2], 10);
                 let periodKey = '', periodTitle = '';
-                if (day >= 15) {
+                if (day <= 15) {
                     periodKey = `${year}-${String(month).padStart(2, '0')}-15`;
-                    periodTitle = `${monthNames[month - 1]} ${year} — 15th Cutoff (Due 15th–31st)`;
+                    periodTitle = `${monthNames[month - 1]} ${year} — 15th Cutoff (Due 1st–15th)`;
                 } else {
-                    let prevMonth = month - 1, prevYear = year;
-                    if (prevMonth === 0) { prevMonth = 12; prevYear -= 1; }
-                    periodKey = `${prevYear}-${String(prevMonth).padStart(2, '0')}-30`;
-                    periodTitle = `${monthNames[prevMonth - 1]} ${prevYear} — 30th Cutoff (Due 1st–14th of next month)`;
+                    periodKey = `${year}-${String(month).padStart(2, '0')}-30`;
+                    periodTitle = `${monthNames[month - 1]} ${year} — 30th Cutoff (Due 16th–31st)`;
                 }
                 if(!grouped[periodKey]) grouped[periodKey] = { title: periodTitle, items: [] };
                 grouped[periodKey].items.push(f);

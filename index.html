@@ -444,7 +444,7 @@
                 </div>
                 <div class="space-y-4 text-sm text-slate-600 leading-relaxed">
                     <p>I’m always open to discussing new projects, creative ideas, or opportunities to collaborate.</p>
-                    <p>Feel free to reach out at <a href="mailto:kristine.aquino2019@gmail.com" class="text-indigo-600 font-medium underline">kristine.aquino2019@gmail.com</a> or connect on LinkedIn at <a href="https://www.linkedin.com/in/kristineaquino/" target="_blank" class="text-indigo-600 font-medium underline">https://www.linkedin.com/in/kristineaquino/</a></p>
+                    <p>Feel free to connect with me on LinkedIn at <a href="https://www.linkedin.com/in/kristineaquino/" target="_blank" class="text-indigo-600 font-medium underline">https://www.linkedin.com/in/kristineaquino/</a></p>
                     <p class="font-semibold text-slate-900 pt-2">~ Ate Tine</p>
                 </div>
                 <div class="pt-4 border-t border-slate-100">
@@ -453,24 +453,15 @@
                         <i class="fa-solid fa-globe"></i><span>View Google Sites Portfolio</span>
                     </a>
                 </div>
-                <!-- Suggestion / Report Error Section -->
+                <!-- Suggestions & Comments via Discord -->
                 <div class="pt-6 border-t border-slate-200 space-y-4">
                     <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
-                        <i class="fa-solid fa-comment-dots text-indigo-600"></i><span>Suggestion or Found an Error?</span>
+                        <i class="fa-brands fa-discord text-indigo-600"></i><span>Suggestions, Comments or Found an Error?</span>
                     </h3>
-                    <form onsubmit="sendFeedbackEmail(event)" class="space-y-3">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Your Email Address</label>
-                            <input type="email" id="feedback-email" required placeholder="name@example.com" class="w-full bg-slate-50 border border-slate-200 text-xs rounded-xl px-3 py-2.5 outline-none focus:border-indigo-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Message / Error Report</label>
-                            <textarea id="feedback-message" required rows="3" placeholder="Describe the suggestion or error..." class="w-full bg-slate-50 border border-slate-200 text-xs rounded-xl px-3 py-2.5 outline-none focus:border-indigo-500"></textarea>
-                        </div>
-                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-5 py-2.5 rounded-xl shadow-sm transition-all flex items-center space-x-2">
-                            <i class="fa-solid fa-paper-plane"></i><span>Send to Ate Tine</span>
-                        </button>
-                    </form>
+                    <p class="text-xs text-slate-500 leading-relaxed">Join my Discord community to send your suggestions, comments, or error reports. You can also meet other users and see updates there.</p>
+                    <a href="https://discord.gg/V3QB8fDqra" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-5 py-2.5 rounded-xl shadow-sm transition-all">
+                        <i class="fa-brands fa-discord"></i><span>Join Our Discord Community</span>
+                    </a>
                 </div>
             </div>
         </div>
@@ -666,7 +657,9 @@
             initCustomCategoriesUI();
             updateTodayBadge();
             const loanStartDate = document.getElementById('lStartDate');
-            if(loanStartDate) loanStartDate.value = new Date().toISOString().split('T')[0];
+            if(loanStartDate) loanStartDate.value = todayISO();
+            data.loans.forEach(reconcileLoanForecasts);
+            localStorage.setItem('budgetAppV15', JSON.stringify(data));
             renderAll();
             renderTasks();
             renderCalendar();
@@ -677,7 +670,8 @@
             return '₱' + Number(num).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
-        function todayISO() { return new Date().toISOString().split('T')[0]; }
+        function ymd(dt) { return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`; }
+        function todayISO() { return ymd(new Date()); }
 
         function saveData() {
             localStorage.setItem('budgetAppV15', JSON.stringify(data));
@@ -834,20 +828,75 @@
                 type: isReceivable ? 'INCOME - LOAN' : 'EXPENSE - LOAN',
                 date: todayISO()
             });
-            clearForecastsIfPaidOff(loan);
+            reconcileLoanForecasts(loan);
             saveData();
             renderCalendar();
             return true;
         }
 
-        // When a loan reaches 0, delete all remaining FORECASTED entries with the same loan name
-        function clearForecastsIfPaidOff(loan) {
-            if (loan && loan.remaining <= 0) {
-                data.forecasts = data.forecasts.filter(f => !(
-                    f.category === 'LOAN' &&
-                    f.status === 'FORECASTED' &&
-                    f.title.toLowerCase() === loan.name.toLowerCase()
-                ));
+        // ---------- Loan <-> Forecast tally ----------
+        // Rule: the sum of a loan's FORECASTED installments always equals its remaining balance.
+        // Extra installments are trimmed/deleted; missing amounts are added as new installments after the last one.
+        let idSeq = 0;
+        const r2 = x => Math.round(x * 100) / 100;
+        const fmtYMD = (y, m, d) => `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+
+        function loanForecasts(loan) {
+            return data.forecasts.filter(f => f.category === 'LOAN' && f.type === 'EXPENSE' && f.status === 'FORECASTED' && f.title.toLowerCase() === loan.name.toLowerCase())
+                .sort((a, b) => a.date.localeCompare(b.date));
+        }
+
+        function loanDueDays(loan) {
+            const nums = ((loan.dueDates || '').match(/\d+/g) || []).map(Number).filter(n => n >= 1 && n <= 31);
+            if (nums.length) return loan.freq === 'SEMIMONTHLY' ? nums.slice(0, 2).sort((a, b) => a - b) : [nums[0]];
+            return [parseInt((loan.startDate || todayISO()).split('-')[2], 10) || 1];
+        }
+
+        function nextDueAfter(days, dateStr) {
+            const [y, m, d] = dateStr.split('-').map(Number);
+            const clamp = (yy, mm, dd) => Math.min(dd, new Date(yy, mm, 0).getDate());
+            for (const dd of days) { const c = clamp(y, m, dd); if (c > d) return fmtYMD(y, m, c); }
+            let ny = y, nm = m + 1;
+            if (nm > 12) { nm = 1; ny++; }
+            return fmtYMD(ny, nm, clamp(ny, nm, days[0]));
+        }
+
+        function reconcileLoanForecasts(loan) {
+            if (!loan) return;
+            let left = r2(Math.max(0, loan.remaining));
+            const remove = new Set();
+            const kept = [];
+            loanForecasts(loan).forEach(f => {
+                if (left <= 0) { remove.add(f.id); return; }
+                f.amount = r2(Math.min(f.amount, left));
+                left = r2(left - f.amount);
+                kept.push(f);
+            });
+            if (left > 0) {
+                const days = loanDueDays(loan);
+                const inst = loan.installment > 0 ? loan.installment : left;
+                let last;
+                if (kept.length) last = kept[kept.length - 1].date;
+                else {
+                    const [sy, sm, sdd] = (loan.startDate || todayISO()).split('-').map(Number);
+                    last = ymd(new Date(sy, sm - 1, sdd - 1));
+                }
+                let guard = 0;
+                while (left > 0 && guard++ < 1200) {
+                    last = nextDueAfter(days, last);
+                    const amt = r2(Math.min(inst, left));
+                    data.forecasts.push({ id: Date.now() + (idSeq++), status: 'FORECASTED', type: 'EXPENSE', category: 'LOAN', title: loan.name, amount: amt, date: last });
+                    left = r2(left - amt);
+                }
+            }
+            if (remove.size) data.forecasts = data.forecasts.filter(f => !remove.has(f.id));
+        }
+
+        // Re-tally the loan that a forecast entry belongs to (if it is a loan forecast)
+        function reconcileForForecast(f) {
+            if (f && f.category === 'LOAN') {
+                const loan = data.loans.find(l => l.name.toLowerCase() === f.title.toLowerCase());
+                if (loan) reconcileLoanForecasts(loan);
             }
         }
 
@@ -877,7 +926,7 @@
         function deleteSavings(id) { data.savings = data.savings.filter(s => s.id !== id); saveData(); }
 
         function addLoan() {
-            const name = document.getElementById('lName').value;
+            const name = document.getElementById('lName').value.trim();
             const principal = parseFloat(document.getElementById('lAmount').value);
             const type = document.getElementById('lType').value;
             const months = parseInt(document.getElementById('lMonths').value) || 1;
@@ -886,32 +935,23 @@
             const freq = document.querySelector('input[name="lFreq"]:checked').value;
 
             if(name && principal > 0 && installment > 0) {
+                if (data.loans.some(l => l.name.toLowerCase() === name.toLowerCase())) {
+                    alert('A loan with this name already exists. Please use a unique loan name so forecasts tally correctly.');
+                    return;
+                }
+                const sd = startDateVal.split('-').map(Number);
                 let dueDatesStr = '';
-                const startDate = new Date(startDateVal); startDate.setHours(0, 0, 0, 0);
-
                 if(freq === 'MONTHLY') {
-                    const dueDay = parseInt(document.getElementById('lDueDate').value) || startDate.getDate();
+                    const dueDay = parseInt(document.getElementById('lDueDate').value) || sd[2];
                     dueDatesStr = `Day ${dueDay} monthly`;
-                    for(let i = 0; i < months; i++) {
-                        let targetDate = new Date(startDate.getFullYear(), startDate.getMonth() + i, dueDay);
-                        targetDate.setHours(0, 0, 0, 0);
-                        if(targetDate >= startDate) {
-                            data.forecasts.push({id: Date.now() + i, status: 'FORECASTED', type: 'EXPENSE', category: 'LOAN', title: name, amount: installment, date: targetDate.toISOString().split('T')[0]});
-                        }
-                    }
                 } else {
                     const due1 = parseInt(document.getElementById('lDue1').value) || 15;
                     const due2 = parseInt(document.getElementById('lDue2').value) || 30;
                     dueDatesStr = `Days ${due1} & ${due2}`;
-                    for(let i = 0; i < months; i++) {
-                        let d1 = new Date(startDate.getFullYear(), startDate.getMonth() + i, due1);
-                        let d2 = new Date(startDate.getFullYear(), startDate.getMonth() + i, due2);
-                        d1.setHours(0, 0, 0, 0); d2.setHours(0, 0, 0, 0);
-                        if(d1 >= startDate) data.forecasts.push({id: Date.now() + (i * 2), status: 'FORECASTED', type: 'EXPENSE', category: 'LOAN', title: name, amount: installment, date: d1.toISOString().split('T')[0]});
-                        if(d2 >= startDate) data.forecasts.push({id: Date.now() + (i * 2) + 1, status: 'FORECASTED', type: 'EXPENSE', category: 'LOAN', title: name, amount: installment, date: d2.toISOString().split('T')[0]});
-                    }
                 }
-                data.loans.push({id: Date.now(), name, principal, remaining: principal, installment, type, months, freq, startDate: startDateVal, dueDates: dueDatesStr});
+                const loan = {id: Date.now(), name, principal, remaining: principal, installment, type, months, freq, startDate: startDateVal, dueDates: dueDatesStr};
+                data.loans.push(loan);
+                reconcileLoanForecasts(loan); // builds the schedule so forecasts total = loan amount
                 closeModal('loanModal');
                 saveData();
                 renderCalendar();
@@ -926,7 +966,9 @@
             const amount = parseFloat(document.getElementById('fAmount').value);
             const date = document.getElementById('fDate').value || todayISO();
             if(title && amount > 0) {
-                data.forecasts.push({id: Date.now(), status: 'FORECASTED', type: fType, category, title, amount, date});
+                const nf = {id: Date.now(), status: 'FORECASTED', type: fType, category, title, amount, date};
+                data.forecasts.push(nf);
+                reconcileForForecast(nf);
                 closeModal('forecastModal');
                 saveData();
                 renderCalendar();
@@ -943,12 +985,10 @@
                     data.transactions.unshift({id: Date.now(), title: `Forecast: ${f.title}`, amount: f.amount, category: f.category, type: txnType, date: f.date});
                     if(f.type === 'EXPENSE' && f.category === 'LOAN') {
                         const loan = data.loans.find(l => l.name.toLowerCase() === f.title.toLowerCase());
-                        if(loan) {
-                            loan.remaining = Math.max(0, +(loan.remaining - f.amount).toFixed(2));
-                            clearForecastsIfPaidOff(loan);
-                        }
+                        if(loan) loan.remaining = Math.max(0, r2(loan.remaining - f.amount));
                     }
                 }
+                reconcileForForecast(f);
                 saveData();
                 renderCalendar();
             }
@@ -957,7 +997,7 @@
         function updateForecastAmount(id, newAmount) {
             const amt = parseFloat(newAmount);
             const f = data.forecasts.find(x => x.id === id);
-            if(f && !isNaN(amt) && amt >= 0) { f.amount = amt; saveData(); }
+            if(f && !isNaN(amt) && amt >= 0) { f.amount = amt; reconcileForForecast(f); saveData(); }
         }
 
         function updateForecastDate(id, newDate) {
@@ -965,7 +1005,12 @@
             if(f && newDate) { f.date = newDate; saveData(); renderCalendar(); }
         }
 
-        function deleteForecast(id) { data.forecasts = data.forecasts.filter(f => f.id !== id); saveData(); renderCalendar(); }
+        function deleteForecast(id) {
+            const f = data.forecasts.find(x => x.id === id);
+            data.forecasts = data.forecasts.filter(x => x.id !== id);
+            reconcileForForecast(f);
+            saveData(); renderCalendar();
+        }
 
         function addCategory() {
             const cat = document.getElementById('newCategoryInput').value.trim().toUpperCase();
@@ -1127,7 +1172,7 @@
 
             document.getElementById('activeLoansTableBody').innerHTML = data.loans.map(l => `
                 <tr class="border-b hover:bg-gray-50">
-                    <td class="p-2 font-medium">${l.name}</td><td class="p-2">${formatPHP(l.principal)}</td><td class="p-2">${formatPHP(l.installment)}</td><td class="p-2 font-bold text-red-600">${formatPHP(l.remaining)}</td>
+                    <td class="p-2 font-medium">${l.name}</td><td class="p-2">${formatPHP(l.principal)}</td><td class="p-2">${formatPHP(l.installment)}</td><td class="p-2 font-bold text-red-600">${formatPHP(l.remaining)}${(() => { const fs = r2(loanForecasts(l).reduce((a, f) => a + f.amount, 0)); const ok = Math.abs(fs - l.remaining) < 0.01; return `<div class="text-[10px] font-semibold ${ok ? 'text-emerald-600' : 'text-amber-600'}">Forecasted: ${formatPHP(fs)} ${ok ? '✓' : '≠'}</div>`; })()}</td>
                     <td class="p-2"><span class="px-1.5 py-0.5 rounded text-[10px] ${l.type === 'PAYABLE' ? 'bg-rose-100 text-rose-700' : 'bg-blue-100 text-blue-700'}">${l.type}</span></td>
                     <td class="p-2 text-center">${l.remaining > 0
                         ? `<button onclick="payLoanPrompt(${l.id})" class="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 px-2 py-0.5 rounded text-[10px] font-semibold">Pay</button>`
@@ -1513,12 +1558,6 @@
             }
         }
 
-        function sendFeedbackEmail(e) {
-            e.preventDefault();
-            const email = document.getElementById('feedback-email').value;
-            const message = document.getElementById('feedback-message').value;
-            window.location.href = `mailto:kristine.aquino2019@gmail.com?subject=${encodeURIComponent("Hub Feedback")}&body=${encodeURIComponent(`From: ${email}\n\n${message}`)}`;
-        }
     </script>
 </body>
 </html>

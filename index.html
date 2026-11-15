@@ -979,21 +979,28 @@
 
         function updateForecastStatus(id, newStatus) {
             const f = data.forecasts.find(x => x.id === id);
-            if(f) {
-                const oldStatus = f.status;
-                f.status = newStatus;
-                if(newStatus === 'PAID' && oldStatus !== 'PAID') {
-                    const txnType = f.type === 'INCOME' ? `INCOME - ${f.category}` : `EXPENSE - ${f.category}`;
-                    data.transactions.unshift({id: Date.now(), title: `Forecast: ${f.title}`, amount: f.amount, category: f.category, type: txnType, date: f.date});
-                    if(f.type === 'EXPENSE' && f.category === 'LOAN') {
-                        const loan = data.loans.find(l => l.name.toLowerCase() === f.title.toLowerCase());
-                        if(loan) loan.remaining = Math.max(0, r2(loan.remaining - f.amount));
-                    }
+            if(!f) return;
+            if(newStatus === 'PAID') {
+                if(!confirm(`Mark "${f.title}" (${formatPHP(f.amount)}) as PAID today? It will be recorded in your transactions and removed from the forecast.`)) {
+                    renderAll(); // reset the dropdown
+                    return;
                 }
+                const paidDate = todayISO(); // date it was paid, not the forecast date
+                const txnType = f.type === 'INCOME' ? `INCOME - ${f.category}` : `EXPENSE - ${f.category}`;
+                data.transactions.unshift({id: Date.now(), title: `Forecast: ${f.title}`, amount: f.amount, category: f.category, type: txnType, date: paidDate});
+                let loan = null;
+                if(f.type === 'EXPENSE' && f.category === 'LOAN') {
+                    loan = data.loans.find(l => l.name.toLowerCase() === f.title.toLowerCase());
+                    if(loan) loan.remaining = Math.max(0, r2(loan.remaining - f.amount));
+                }
+                data.forecasts = data.forecasts.filter(x => x.id !== id); // paid forecasts are removed
+                if(loan) reconcileLoanForecasts(loan);
+            } else {
+                f.status = newStatus;
                 reconcileForForecast(f);
-                saveData();
-                renderCalendar();
             }
+            saveData();
+            renderCalendar();
         }
 
         function updateForecastAmount(id, newAmount) {
@@ -1134,14 +1141,11 @@
             XLSX.writeFile(wb, `Ate_Tines_Hub_Report_${todayISO()}.xlsx`);
         }
 
-        // Auto-delete PAID forecasts dated 5+ days before today (e.g. today 11/15 -> 11/10 and older).
-        // FORECASTED (and CANCELED) entries are never auto-deleted. Transactions are kept.
+        // Safety net: PAID forecasts are normally removed the moment they are paid.
+        // This also clears any leftover PAID entries from older data. FORECASTED/CANCELED are never touched.
         function purgeOldPaidForecasts() {
-            const c = new Date();
-            c.setDate(c.getDate() - 5);
-            const cutoff = ymd(c);
             const before = data.forecasts.length;
-            data.forecasts = data.forecasts.filter(f => !(f.status === 'PAID' && f.date && f.date <= cutoff));
+            data.forecasts = data.forecasts.filter(f => f.status !== 'PAID');
             const removed = before - data.forecasts.length;
             if (removed > 0) localStorage.setItem('budgetAppV15', JSON.stringify(data));
             return removed;

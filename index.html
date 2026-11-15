@@ -129,7 +129,7 @@
                             <th class="p-2">Running Bal</th>
                             <th class="p-2">Withdrawal</th>
                             <th class="p-2">Deposit</th>
-                            <th class="p-2">Interest</th>
+                            <th class="p-2 text-center">Add Interest</th>
                             <th class="p-2 text-center">Actions</th>
                         </tr>
                     </thead>
@@ -138,7 +138,7 @@
             </div>
             <!-- Savings Deposit & Withdrawal History Table -->
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 overflow-x-auto">
-                <h3 class="font-bold text-gray-700 mb-2 text-sm">Savings Deposit & Withdrawal History</h3>
+                <h3 class="font-bold text-gray-700 mb-2 text-sm">Savings History</h3>
                 <table class="w-full text-left text-xs">
                     <thead>
                         <tr class="border-b text-gray-500 bg-gray-50">
@@ -183,6 +183,7 @@
                             <th class="p-2">Remaining</th>
                             <th class="p-2">Type</th>
                             <th class="p-2 text-center">Pay</th>
+                            <th class="p-2 text-center">Add Interest</th>
                             <th class="p-2">Terms (Mos)</th>
                             <th class="p-2">Freq</th>
                             <th class="p-2">Start Date</th>
@@ -195,13 +196,13 @@
             </div>
             <!-- Loan Payment History Table -->
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 overflow-x-auto">
-                <h3 class="font-bold text-gray-700 mb-2 text-sm">Loan Payment History</h3>
+                <h3 class="font-bold text-gray-700 mb-2 text-sm">Loan History</h3>
                 <table class="w-full text-left text-xs">
                     <thead>
                         <tr class="border-b text-gray-500 bg-gray-50">
                             <th class="p-2">Date</th>
                             <th class="p-2">Loan Name</th>
-                            <th class="p-2 text-right">Amount Paid</th>
+                            <th class="p-2 text-right">Amount</th>
                         </tr>
                     </thead>
                     <tbody id="loanPaymentHistoryTable"></tbody>
@@ -780,16 +781,16 @@
 
         function openAmountModal(kind, id) {
             let title, name, info;
-            if (kind === 'loanPay') {
+            if (kind === 'loanPay' || kind === 'loanInterest') {
                 const l = data.loans.find(x => x.id === id);
-                if (!l || l.remaining <= 0) return;
-                title = l.type === 'RECEIVABLE' ? 'Record Payment Received' : 'Pay Loan';
+                if (!l || (kind === 'loanPay' && l.remaining <= 0)) return;
+                title = kind === 'loanInterest' ? 'Add Interest' : (l.type === 'RECEIVABLE' ? 'Record Payment Received' : 'Pay Loan');
                 name = l.name;
                 info = `Remaining balance: ${formatPHP(l.remaining)}`;
             } else {
                 const s = data.savings.find(x => x.id === id);
                 if (!s) return;
-                title = kind === 'deposit' ? 'Deposit to Savings' : 'Withdraw from Savings';
+                title = kind === 'deposit' ? 'Deposit to Savings' : (kind === 'savInterest' ? 'Add Interest' : 'Withdraw from Savings');
                 name = s.name;
                 info = `Current balance: ${formatPHP(s.balance)}`;
             }
@@ -808,6 +809,8 @@
             const { kind, id } = amountCtx;
             let ok = true;
             if (kind === 'loanPay') ok = payLoan(id, amt);
+            else if (kind === 'loanInterest') ok = addLoanInterest(id, amt);
+            else if (kind === 'savInterest') ok = addSavingsInterest(id, amt);
             else if (kind === 'deposit') ok = doDeposit(id, amt);
             else ok = doWithdraw(id, amt);
             if (ok !== false) { amountCtx = null; closeModal('amountModal'); }
@@ -900,6 +903,28 @@
                 const loan = data.loans.find(l => l.name.toLowerCase() === f.title.toLowerCase());
                 if (loan) reconcileLoanForecasts(loan);
             }
+        }
+
+        function addLoanInterest(id, amt) {
+            const loan = data.loans.find(l => l.id === id);
+            if (!loan) return false;
+            loan.remaining = r2(loan.remaining + amt);               // adds to Remaining
+            if (!data.loanInterests) data.loanInterests = [];
+            data.loanInterests.unshift({ id: Date.now(), loanId: loan.id, title: `Interest added: ${loan.name}`, amount: amt, date: todayISO() }); // Loan History
+            reconcileLoanForecasts(loan);                             // adds the interest to the forecast
+            saveData();
+            renderCalendar();
+            return true;
+        }
+
+        function addSavingsInterest(id, amt) {
+            const sav = data.savings.find(x => x.id === id);
+            if (!sav) return false;
+            sav.balance = r2(sav.balance + amt);                      // adds to Running Bal
+            if (!data.savingsInterests) data.savingsInterests = [];
+            data.savingsInterests.unshift({ id: Date.now(), savingsId: sav.id, title: `Interest added: ${sav.name}`, amount: amt, date: todayISO() }); // Savings History
+            saveData();
+            return true;
         }
 
         function doDeposit(id, amt) {
@@ -1173,7 +1198,7 @@
             document.getElementById('bankSavingsTableBody').innerHTML = data.savings.map(s => `
                 <tr class="border-b hover:bg-gray-50">
                     <td class="p-2">${s.date}</td><td class="p-2 font-medium">${s.name}</td><td class="p-2">${formatPHP(s.initial)}</td>
-                    <td class="p-2 font-bold text-indigo-600">${formatPHP(s.balance)}</td><td class="p-2 text-amber-600">${formatPHP(s.withdrawal)}</td><td class="p-2 text-green-600">${formatPHP(s.deposit)}</td><td class="p-2">${s.interest}%</td>
+                    <td class="p-2 font-bold text-indigo-600">${formatPHP(s.balance)}</td><td class="p-2 text-amber-600">${formatPHP(s.withdrawal)}</td><td class="p-2 text-green-600">${formatPHP(s.deposit)}</td><td class="p-2 text-center"><button onclick="openAmountModal('savInterest', ${s.id})" class="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 px-2 py-0.5 rounded text-[10px] font-semibold">+ Interest</button></td>
                     <td class="p-2 text-center space-x-1">
                         <button onclick="depositSavings(${s.id})" class="bg-green-100 text-green-700 px-1.5 py-0.5 rounded text-[10px]">Dep</button>
                         <button onclick="withdrawSavings(${s.id})" class="bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded text-[10px]">W/D</button>
@@ -1182,8 +1207,12 @@
                 </tr>
             `).join('') || '<tr><td colspan="8" class="p-3 text-center text-gray-400">No bank savings accounts added.</td></tr>';
 
-            document.getElementById('savingsHistoryTable').innerHTML = data.transactions.filter(t => t.category === 'SAVINGS').map(sh => `
-                <tr class="border-b"><td class="p-2 text-gray-600">${sh.date}</td><td class="p-2 font-medium">${sh.title}</td><td class="p-2 text-right font-bold ${sh.type.startsWith('INCOME') ? 'text-green-600' : 'text-indigo-600'}">${sh.type.startsWith('INCOME') ? '+' : '-'}${formatPHP(sh.amount)}</td></tr>
+            const savingsHistory = [
+                ...data.transactions.filter(t => t.category === 'SAVINGS').map(t => ({ id: t.id, date: t.date, title: t.title, amount: t.amount, kind: t.type.startsWith('INCOME') ? 'wd' : 'dep' })),
+                ...(data.savingsInterests || []).map(i => ({ id: i.id, date: i.date, title: i.title, amount: i.amount, kind: 'int' }))
+            ].sort((x, y) => y.date.localeCompare(x.date) || y.id - x.id);
+            document.getElementById('savingsHistoryTable').innerHTML = savingsHistory.map(sh => `
+                <tr class="border-b"><td class="p-2 text-gray-600">${sh.date}</td><td class="p-2 font-medium">${sh.title}${sh.kind === 'int' ? ' <span class="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-emerald-100 text-emerald-700">INTEREST</span>' : ''}</td><td class="p-2 text-right font-bold ${sh.kind === 'dep' ? 'text-indigo-600' : 'text-green-600'}">${sh.kind === 'dep' ? '-' : '+'}${formatPHP(sh.amount)}</td></tr>
             `).join('') || '<tr><td colspan="3" class="py-3 text-center text-gray-400">No savings history recorded yet.</td></tr>';
 
             // Render Loans & Total Remaining Loans
@@ -1197,14 +1226,19 @@
                     <td class="p-2 text-center">${l.remaining > 0
                         ? `<button onclick="payLoanPrompt(${l.id})" class="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 px-2 py-0.5 rounded text-[10px] font-semibold">Pay</button>`
                         : `<span class="text-emerald-600 text-[10px] font-bold">PAID OFF</span>`}</td>
+                    <td class="p-2 text-center"><button onclick="openAmountModal('loanInterest', ${l.id})" class="bg-amber-100 text-amber-700 hover:bg-amber-200 px-2 py-0.5 rounded text-[10px] font-semibold">+ Interest</button></td>
                     <td class="p-2">${l.months} mos</td><td class="p-2">${l.freq}</td><td class="p-2 text-slate-500">${l.startDate || '-'}</td><td class="p-2 text-[10px]">${l.dueDates}</td>
                     <td class="p-2 text-center"><button onclick="deleteLoan(${l.id})" class="text-red-500"><i class="fas fa-trash"></i></button></td>
                 </tr>
-            `).join('') || '<tr><td colspan="11" class="p-3 text-center text-gray-400">No active loans recorded.</td></tr>';
+            `).join('') || '<tr><td colspan="12" class="p-3 text-center text-gray-400">No active loans recorded.</td></tr>';
 
-            document.getElementById('loanPaymentHistoryTable').innerHTML = data.transactions.filter(t => t.category === 'LOAN').map(lp => `
-                <tr class="border-b"><td class="p-2 text-gray-600">${lp.date}</td><td class="p-2 font-medium">${lp.title}</td><td class="p-2 text-right font-bold ${lp.type.startsWith('INCOME') ? 'text-green-600' : 'text-red-600'}">${lp.type.startsWith('INCOME') ? '+' : '-'}${formatPHP(lp.amount)}</td></tr>
-            `).join('') || '<tr><td colspan="3" class="py-3 text-center text-gray-400">No loan payments recorded yet.</td></tr>';
+            const loanHistory = [
+                ...data.transactions.filter(t => t.category === 'LOAN').map(t => ({ id: t.id, date: t.date, title: t.title, amount: t.amount, kind: t.type.startsWith('INCOME') ? 'in' : 'out' })),
+                ...(data.loanInterests || []).map(i => ({ id: i.id, date: i.date, title: i.title, amount: i.amount, kind: 'int' }))
+            ].sort((x, y) => y.date.localeCompare(x.date) || y.id - x.id);
+            document.getElementById('loanPaymentHistoryTable').innerHTML = loanHistory.map(lp => `
+                <tr class="border-b"><td class="p-2 text-gray-600">${lp.date}</td><td class="p-2 font-medium">${lp.title}${lp.kind === 'int' ? ' <span class="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-amber-100 text-amber-700">INTEREST</span>' : ''}</td><td class="p-2 text-right font-bold ${lp.kind === 'in' ? 'text-green-600' : lp.kind === 'int' ? 'text-amber-600' : 'text-red-600'}">${lp.kind === 'in' ? '+' : lp.kind === 'int' ? '+' : '-'}${formatPHP(lp.amount)}</td></tr>
+            `).join('') || '<tr><td colspan="3" class="py-3 text-center text-gray-400">No loan history recorded yet.</td></tr>';
 
             // Render Forecasts
             const fMonth = document.getElementById('filterMonth').value;

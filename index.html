@@ -182,6 +182,7 @@
                             <th class="p-2">Installment</th>
                             <th class="p-2">Remaining</th>
                             <th class="p-2">Type</th>
+                            <th class="p-2 text-center">Pay</th>
                             <th class="p-2">Terms (Mos)</th>
                             <th class="p-2">Freq</th>
                             <th class="p-2">Start Date</th>
@@ -526,7 +527,7 @@
             <select id="lType" class="w-full border p-2 rounded-xl text-xs"><option value="PAYABLE">Payable (I owe)</option><option value="RECEIVABLE">RECEIVABLE (Owed to me)</option></select>
             <input type="number" id="lMonths" placeholder="Terms (Number of Months)" class="w-full border p-2 rounded-xl text-xs">
             <input type="number" id="lInstallment" placeholder="Installment Amount" class="w-full border p-2 rounded-xl text-xs">
-            
+
             <label class="block text-xs font-bold text-gray-600 mt-1">Deduction Start Date:</label>
             <input type="date" id="lStartDate" class="w-full border p-2 rounded-xl text-xs">
 
@@ -558,6 +559,20 @@
             <div class="flex justify-end space-x-2 pt-2">
                 <button onclick="closeModal('forecastModal')" class="px-4 py-2 text-gray-600 text-xs">Cancel</button>
                 <button onclick="addForecast()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-semibold">Add</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AMOUNT MODAL (Loan Payment / Savings Deposit / Savings Withdrawal) -->
+    <div id="amountModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-6 rounded-2xl w-full max-w-sm space-y-3">
+            <h3 id="amountModalTitle" class="text-lg font-bold">Enter Amount</h3>
+            <p id="amountModalName" class="text-sm font-semibold text-slate-700"></p>
+            <p id="amountModalInfo" class="text-xs text-slate-500"></p>
+            <input type="number" id="amountInput" min="0" step="0.01" placeholder="Amount (PHP)" onkeydown="if(event.key==='Enter') confirmAmount()" class="w-full border p-2 rounded-xl text-xs">
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="closeModal('amountModal')" class="px-4 py-2 text-gray-600 text-xs">Cancel</button>
+                <button onclick="confirmAmount()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-semibold">Confirm</button>
             </div>
         </div>
     </div>
@@ -643,6 +658,7 @@
         let charts = {};
         let statusChartInstance = null;
         let currentDate = new Date();
+        let amountCtx = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             applyHubTitle();
@@ -660,6 +676,8 @@
         function formatPHP(num) {
             return '₱' + Number(num).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
+
+        function todayISO() { return new Date().toISOString().split('T')[0]; }
 
         function saveData() {
             localStorage.setItem('budgetAppV15', JSON.stringify(data));
@@ -737,7 +755,7 @@
             const amount = parseFloat(document.getElementById('tAmount').value);
             const category = document.getElementById('tCategory').value;
             const type = document.getElementById('tType').value;
-            const date = new Date().toISOString().split('T')[0];
+            const date = todayISO();
             if(title && amount > 0) {
                 data.transactions.unshift({id: Date.now(), title, amount, category, type, date});
                 closeModal('transactionModal');
@@ -751,35 +769,111 @@
             const name = document.getElementById('sName').value;
             const initial = parseFloat(document.getElementById('sInitial').value) || 0;
             const interest = parseFloat(document.getElementById('sInterest').value) || 0;
-            const date = new Date().toISOString().split('T')[0];
+            const date = todayISO();
             if(name) {
                 data.savings.push({id: Date.now(), name, initial, balance: initial, interest, withdrawal: 0, deposit: 0, date});
                 closeModal('savingsModal');
                 saveData();
             }
         }
-        function depositSavings(id) {
-            const amt = parseFloat(prompt("Enter deposit amount in PHP:"));
-            const sav = data.savings.find(s => s.id === id);
-            if(sav && amt > 0) {
-                sav.balance += amt;
-                sav.deposit += amt;
-                data.transactions.unshift({id: Date.now(), title: `Deposit: ${sav.name}`, amount: amt, category: 'SAVINGS', type: 'EXPENSE - SAVINGS', date: new Date().toISOString().split('T')[0]});
-                saveData();
-                renderCalendar();
+
+        // ---------- Amount Modal (Loan Pay / Savings Deposit / Savings Withdrawal) ----------
+        function depositSavings(id) { openAmountModal('deposit', id); }
+        function withdrawSavings(id) { openAmountModal('withdraw', id); }
+        function payLoanPrompt(id) { openAmountModal('loanPay', id); }
+
+        function openAmountModal(kind, id) {
+            let title, name, info;
+            if (kind === 'loanPay') {
+                const l = data.loans.find(x => x.id === id);
+                if (!l || l.remaining <= 0) return;
+                title = l.type === 'RECEIVABLE' ? 'Record Payment Received' : 'Pay Loan';
+                name = l.name;
+                info = `Remaining balance: ${formatPHP(l.remaining)}`;
+            } else {
+                const s = data.savings.find(x => x.id === id);
+                if (!s) return;
+                title = kind === 'deposit' ? 'Deposit to Savings' : 'Withdraw from Savings';
+                name = s.name;
+                info = `Current balance: ${formatPHP(s.balance)}`;
+            }
+            amountCtx = { kind, id };
+            document.getElementById('amountModalTitle').innerText = title;
+            document.getElementById('amountModalName').innerText = name;
+            document.getElementById('amountModalInfo').innerText = info;
+            document.getElementById('amountInput').value = '';
+            openModal('amountModal');
+            setTimeout(() => document.getElementById('amountInput').focus(), 50);
+        }
+
+        function confirmAmount() {
+            const amt = parseFloat(document.getElementById('amountInput').value);
+            if (!amountCtx || !(amt > 0)) { alert('Please enter a valid amount.'); return; }
+            const { kind, id } = amountCtx;
+            let ok = true;
+            if (kind === 'loanPay') ok = payLoan(id, amt);
+            else if (kind === 'deposit') ok = doDeposit(id, amt);
+            else ok = doWithdraw(id, amt);
+            if (ok !== false) { amountCtx = null; closeModal('amountModal'); }
+        }
+
+        function payLoan(id, amt) {
+            const loan = data.loans.find(l => l.id === id);
+            if (!loan) return false;
+            if (amt > loan.remaining) {
+                if (!confirm(`Amount exceeds the remaining balance. Pay only ${formatPHP(loan.remaining)}?`)) return false;
+                amt = loan.remaining;
+            }
+            loan.remaining = Math.max(0, +(loan.remaining - amt).toFixed(2));
+            const isReceivable = loan.type === 'RECEIVABLE';
+            data.transactions.unshift({
+                id: Date.now(),
+                title: `${isReceivable ? 'Payment Received' : 'Payment'}: ${loan.name}`,
+                amount: amt,
+                category: 'LOAN',
+                type: isReceivable ? 'INCOME - LOAN' : 'EXPENSE - LOAN',
+                date: todayISO()
+            });
+            clearForecastsIfPaidOff(loan);
+            saveData();
+            renderCalendar();
+            return true;
+        }
+
+        // When a loan reaches 0, delete all remaining FORECASTED entries with the same loan name
+        function clearForecastsIfPaidOff(loan) {
+            if (loan && loan.remaining <= 0) {
+                data.forecasts = data.forecasts.filter(f => !(
+                    f.category === 'LOAN' &&
+                    f.status === 'FORECASTED' &&
+                    f.title.toLowerCase() === loan.name.toLowerCase()
+                ));
             }
         }
-        function withdrawSavings(id) {
-            const amt = parseFloat(prompt("Enter withdrawal amount in PHP:"));
+
+        function doDeposit(id, amt) {
             const sav = data.savings.find(s => s.id === id);
-            if(sav && amt > 0 && amt <= sav.balance) {
-                sav.balance -= amt;
-                sav.withdrawal += amt;
-                data.transactions.unshift({id: Date.now(), title: `Withdrawal: ${sav.name}`, amount: amt, category: 'SAVINGS', type: 'INCOME - SAVINGS WITHDRAWAL', date: new Date().toISOString().split('T')[0]});
-                saveData();
-                renderCalendar();
-            }
+            if (!sav) return false;
+            sav.balance += amt;
+            sav.deposit += amt;
+            data.transactions.unshift({id: Date.now(), title: `Deposit: ${sav.name}`, amount: amt, category: 'SAVINGS', type: 'EXPENSE - SAVINGS', date: todayISO()});
+            saveData();
+            renderCalendar();
+            return true;
         }
+
+        function doWithdraw(id, amt) {
+            const sav = data.savings.find(s => s.id === id);
+            if (!sav) return false;
+            if (amt > sav.balance) { alert('Withdrawal exceeds the current balance.'); return false; }
+            sav.balance -= amt;
+            sav.withdrawal += amt;
+            data.transactions.unshift({id: Date.now(), title: `Withdrawal: ${sav.name}`, amount: amt, category: 'SAVINGS', type: 'INCOME - SAVINGS WITHDRAWAL', date: todayISO()});
+            saveData();
+            renderCalendar();
+            return true;
+        }
+
         function deleteSavings(id) { data.savings = data.savings.filter(s => s.id !== id); saveData(); }
 
         function addLoan() {
@@ -788,9 +882,9 @@
             const type = document.getElementById('lType').value;
             const months = parseInt(document.getElementById('lMonths').value) || 1;
             const installment = parseFloat(document.getElementById('lInstallment').value) || 0;
-            const startDateVal = document.getElementById('lStartDate').value || new Date().toISOString().split('T')[0];
+            const startDateVal = document.getElementById('lStartDate').value || todayISO();
             const freq = document.querySelector('input[name="lFreq"]:checked').value;
-            
+
             if(name && principal > 0 && installment > 0) {
                 let dueDatesStr = '';
                 const startDate = new Date(startDateVal); startDate.setHours(0, 0, 0, 0);
@@ -830,7 +924,7 @@
             const category = document.getElementById('fCategorySelect').value;
             const title = document.getElementById('fTitle').value;
             const amount = parseFloat(document.getElementById('fAmount').value);
-            const date = document.getElementById('fDate').value || new Date().toISOString().split('T')[0];
+            const date = document.getElementById('fDate').value || todayISO();
             if(title && amount > 0) {
                 data.forecasts.push({id: Date.now(), status: 'FORECASTED', type: fType, category, title, amount, date});
                 closeModal('forecastModal');
@@ -849,7 +943,10 @@
                     data.transactions.unshift({id: Date.now(), title: `Forecast: ${f.title}`, amount: f.amount, category: f.category, type: txnType, date: f.date});
                     if(f.type === 'EXPENSE' && f.category === 'LOAN') {
                         const loan = data.loans.find(l => l.name.toLowerCase() === f.title.toLowerCase());
-                        if(loan) loan.remaining = Math.max(0, loan.remaining - f.amount);
+                        if(loan) {
+                            loan.remaining = Math.max(0, +(loan.remaining - f.amount).toFixed(2));
+                            clearForecastsIfPaidOff(loan);
+                        }
                     }
                 }
                 saveData();
@@ -987,7 +1084,7 @@
             XLSX.utils.book_append_sheet(wb, ws6, "Calendar");
 
             // Save file
-            XLSX.writeFile(wb, `Ate_Tines_Hub_Report_${new Date().toISOString().split('T')[0]}.xlsx`);
+            XLSX.writeFile(wb, `Ate_Tines_Hub_Report_${todayISO()}.xlsx`);
         }
 
         function renderAll() {
@@ -1032,13 +1129,16 @@
                 <tr class="border-b hover:bg-gray-50">
                     <td class="p-2 font-medium">${l.name}</td><td class="p-2">${formatPHP(l.principal)}</td><td class="p-2">${formatPHP(l.installment)}</td><td class="p-2 font-bold text-red-600">${formatPHP(l.remaining)}</td>
                     <td class="p-2"><span class="px-1.5 py-0.5 rounded text-[10px] ${l.type === 'PAYABLE' ? 'bg-rose-100 text-rose-700' : 'bg-blue-100 text-blue-700'}">${l.type}</span></td>
+                    <td class="p-2 text-center">${l.remaining > 0
+                        ? `<button onclick="payLoanPrompt(${l.id})" class="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 px-2 py-0.5 rounded text-[10px] font-semibold">Pay</button>`
+                        : `<span class="text-emerald-600 text-[10px] font-bold">PAID OFF</span>`}</td>
                     <td class="p-2">${l.months} mos</td><td class="p-2">${l.freq}</td><td class="p-2 text-slate-500">${l.startDate || '-'}</td><td class="p-2 text-[10px]">${l.dueDates}</td>
                     <td class="p-2 text-center"><button onclick="deleteLoan(${l.id})" class="text-red-500"><i class="fas fa-trash"></i></button></td>
                 </tr>
-            `).join('') || '<tr><td colspan="10" class="p-3 text-center text-gray-400">No active loans recorded.</td></tr>';
+            `).join('') || '<tr><td colspan="11" class="p-3 text-center text-gray-400">No active loans recorded.</td></tr>';
 
-            document.getElementById('loanPaymentHistoryTable').innerHTML = data.transactions.filter(t => t.category === 'LOAN' && t.type.startsWith('EXPENSE')).map(lp => `
-                <tr class="border-b"><td class="p-2 text-gray-600">${lp.date}</td><td class="p-2 font-medium">${lp.title}</td><td class="p-2 text-right font-bold text-red-600">-${formatPHP(lp.amount)}</td></tr>
+            document.getElementById('loanPaymentHistoryTable').innerHTML = data.transactions.filter(t => t.category === 'LOAN').map(lp => `
+                <tr class="border-b"><td class="p-2 text-gray-600">${lp.date}</td><td class="p-2 font-medium">${lp.title}</td><td class="p-2 text-right font-bold ${lp.type.startsWith('INCOME') ? 'text-green-600' : 'text-red-600'}">${lp.type.startsWith('INCOME') ? '+' : '-'}${formatPHP(lp.amount)}</td></tr>
             `).join('') || '<tr><td colspan="3" class="py-3 text-center text-gray-400">No loan payments recorded yet.</td></tr>';
 
             // Render Forecasts
@@ -1078,7 +1178,7 @@
                     const group = grouped[key];
                     let subTotalExpense = group.items.reduce((acc, item) => acc + (item.status === 'FORECASTED' && item.type === 'EXPENSE' ? item.amount : 0), 0);
                     let subTotalIncome = group.items.reduce((acc, item) => acc + (item.status === 'FORECASTED' && item.type === 'INCOME' ? item.amount : 0), 0);
-                    
+
                     forecastHtml += `
                         <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 space-y-3">
                             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-indigo-50 text-indigo-700 font-bold px-3 py-2.5 rounded-xl text-xs uppercase tracking-wider border-l-4 border-indigo-600 gap-1">
@@ -1136,7 +1236,7 @@
             form.reset();
             document.getElementById('task-edit-id').value = '';
             document.getElementById('modal-title').innerText = 'Add New Task';
-            document.getElementById('task-date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('task-date').value = todayISO();
             document.getElementById('task-schedule-type').value = 'wholeday';
             toggleScheduleType();
 
@@ -1223,7 +1323,7 @@
             const filterView = document.getElementById('filter-view').value;
             const filterMonth = document.getElementById('filter-task-month').value;
             const filterYear = document.getElementById('filter-task-year').value;
-            const todayStr = new Date().toISOString().split('T')[0];
+            const todayStr = todayISO();
 
             let filtered = tasks.filter(t => {
                 if(filterView === 'today' && t.date !== todayStr) return false;
@@ -1278,7 +1378,7 @@
             const firstDayIndex = new Date(year, month, 1).getDay();
             const lastDay = new Date(year, month + 1, 0).getDate();
             const prevLastDay = new Date(year, month, 0).getDate();
-            const todayStr = new Date().toISOString().split('T')[0];
+            const todayStr = todayISO();
 
             let daysHtml = '';
             for(let i = firstDayIndex; i > 0; i--) {
@@ -1287,13 +1387,13 @@
             for(let day = 1; day <= lastDay; day++) {
                 const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 const isToday = dateString === todayStr;
-                
+
                 const dayTasks = tasks.filter(t => t.date === dateString);
                 const dayTxns = data.transactions.filter(t => t.date === dateString);
                 const dayForecasts = data.forecasts.filter(f => f.date === dateString && f.status === 'FORECASTED');
 
                 let pillsHtml = '';
-                
+
                 dayTasks.forEach(t => {
                     const colorBg = t.category === 'WORK' ? 'bg-pink-500 text-white' : t.category === 'PERSONAL' ? 'bg-emerald-500 text-white' : t.category === 'SCHOOL' ? 'bg-amber-500 text-white' : 'bg-blue-500 text-white';
                     pillsHtml += `<div class="text-[9px] px-1.5 py-0.5 rounded truncate ${colorBg} font-medium mt-0.5" title="Task: ${t.activity}"><i class="fa-solid fa-list-check mr-1"></i>${t.activity}</div>`;
@@ -1329,7 +1429,7 @@
         function initChart() {
             const ctx = document.getElementById('statusChart');
             if(!ctx) return;
-            const todayStr = new Date().toISOString().split('T')[0];
+            const todayStr = todayISO();
             const todayTasks = tasks.filter(t => t.date === todayStr);
             statusChartInstance = new Chart(ctx.getContext('2d'), {
                 type: 'doughnut',
@@ -1343,7 +1443,7 @@
 
         function updateChart() {
             if(!statusChartInstance) return;
-            const todayStr = new Date().toISOString().split('T')[0];
+            const todayStr = todayISO();
             const todayTasks = tasks.filter(t => t.date === todayStr);
             statusChartInstance.data.datasets[0].data = [
                 todayTasks.filter(t => t.status === 'COMPLETED').length,
@@ -1366,7 +1466,7 @@
         function backupAllData() {
             const fullHub = { budget: data, tasks: tasks, customCategories: customCategories, hubTitle: hubTitle };
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fullHub, null, 2));
-            const a = document.createElement('a'); a.href = dataStr; a.download = `ate_tine_hub_backup_${new Date().toISOString().split('T')[0]}.json`;
+            const a = document.createElement('a'); a.href = dataStr; a.download = `ate_tine_hub_backup_${todayISO()}.json`;
             document.body.appendChild(a); a.click(); a.remove();
         }
 

@@ -659,6 +659,11 @@
             updateTodayBadge();
             const loanStartDate = document.getElementById('lStartDate');
             if(loanStartDate) loanStartDate.value = todayISO();
+            // One-time fix: forecasts above their loan's installment amount are capped, and the excess moves to a new installment date
+            if (!data.capFixV1) {
+                data.loans.forEach(l => loanForecasts(l).forEach(f => { if (l.installment > 0 && f.amount > l.installment) f.amount = l.installment; }));
+                data.capFixV1 = true;
+            }
             data.loans.forEach(reconcileLoanForecasts);
             localStorage.setItem('budgetAppV15', JSON.stringify(data));
             renderAll();
@@ -911,7 +916,14 @@
             loan.remaining = r2(loan.remaining + amt);               // adds to Remaining
             if (!data.loanInterests) data.loanInterests = [];
             data.loanInterests.unshift({ id: Date.now(), loanId: loan.id, title: `Interest added: ${loan.name}`, amount: amt, date: todayISO() }); // Loan History
-            reconcileLoanForecasts(loan);                             // adds the interest to the forecast
+            // Top up the last forecasted installment, but never above the installment amount;
+            // whatever is left over becomes new installment(s) on the following due dates.
+            const pending = loanForecasts(loan);
+            if (pending.length && loan.installment > 0) {
+                const last = pending[pending.length - 1];
+                last.amount = r2(Math.min(loan.installment, last.amount + amt));
+            }
+            reconcileLoanForecasts(loan);                             // adds the remaining interest as new installment date(s)
             saveData();
             renderCalendar();
             return true;

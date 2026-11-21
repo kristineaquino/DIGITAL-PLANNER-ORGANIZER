@@ -34,6 +34,9 @@
 
             <!-- Top Header Actions -->
             <div class="flex items-center space-x-2">
+                <button id="xlHeaderBtn" onclick="switchTab('settings')" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold shadow transition-all flex items-center space-x-1 bg-slate-500" title="Live Excel file connection (open Settings)">
+                    <i class="fas fa-plug"></i><span>Excel: Off</span>
+                </button>
                 <button onclick="exportToExcelWithCharts()" class="bg-indigo-700 hover:bg-indigo-800 px-2.5 py-1.5 rounded-lg text-xs font-semibold shadow transition-all flex items-center space-x-1" title="Export Excel with All Tabs & Charts">
                     <i class="fas fa-file-excel"></i><span class="hidden sm:inline"> Export Excel</span>
                 </button>
@@ -406,6 +409,49 @@
                     </div>
                 </div>
 
+                <!-- Live Excel Connection -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4 md:col-span-2">
+                    <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
+                        <i class="fa-solid fa-plug text-indigo-600"></i><span>Live Excel File Connection</span>
+                    </h3>
+                    <p class="text-xs text-slate-500">Connect the hub to an Excel file on your computer. Every change you make is saved to the file automatically, in real time. Disconnect any time to stop.</p>
+                    <div class="flex items-center space-x-2">
+                        <span id="xlDot" class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                        <span id="xlStatusText" class="text-xs font-semibold text-slate-700">Not connected</span>
+                    </div>
+                    <div id="xlBtnsOff" class="flex flex-wrap gap-3">
+                        <button onclick="connectExcelFile()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-all flex items-center space-x-2"><i class="fa-solid fa-link"></i><span>Connect Excel File</span></button>
+                        <button onclick="createExcelFile()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-4 py-2.5 rounded-xl transition-all flex items-center space-x-2"><i class="fa-solid fa-file-circle-plus"></i><span>Create New Excel File</span></button>
+                    </div>
+                    <div id="xlBtnsNeeds" class="hidden flex flex-wrap gap-3">
+                        <button onclick="reconnectExcelFile()" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-all flex items-center space-x-2"><i class="fa-solid fa-link"></i><span>Reconnect</span></button>
+                        <button onclick="disconnectExcelFile()" class="bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-semibold px-4 py-2.5 rounded-xl transition-all flex items-center space-x-2"><i class="fa-solid fa-link-slash"></i><span>Disconnect</span></button>
+                    </div>
+                    <div id="xlBtnsOn" class="hidden flex flex-wrap gap-3">
+                        <button onclick="writeExcelNow()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-all flex items-center space-x-2"><i class="fa-solid fa-floppy-disk"></i><span>Save to Excel Now</span></button>
+                        <button onclick="loadFromExcelNow()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-4 py-2.5 rounded-xl transition-all flex items-center space-x-2"><i class="fa-solid fa-rotate"></i><span>Load from Excel</span></button>
+                        <button onclick="disconnectExcelFile()" class="bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-semibold px-4 py-2.5 rounded-xl transition-all flex items-center space-x-2"><i class="fa-solid fa-link-slash"></i><span>Disconnect</span></button>
+                    </div>
+                    <p class="text-[11px] text-slate-400">Works in Chrome and Edge on a computer. Keep the file closed in Excel while the hub is open so it can save. If you edit the file in Excel, the hub offers to load your changes when you return to this page.</p>
+                </div>
+
+                <!-- Excel Database -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                    <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
+                        <i class="fa-solid fa-file-excel text-indigo-600"></i><span>Excel Database</span>
+                    </h3>
+                    <p class="text-xs text-slate-500">Use Excel as your database. Download everything as one workbook (a sheet for each table), edit it in Excel, then import it back to update the hub.</p>
+                    <div class="flex flex-wrap gap-3 pt-2">
+                        <button onclick="exportToExcelWithCharts()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-all flex items-center space-x-2">
+                            <i class="fa-solid fa-download"></i><span>Download Excel Database</span>
+                        </button>
+                        <label class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-4 py-2.5 rounded-xl cursor-pointer transition-all flex items-center space-x-2">
+                            <i class="fa-solid fa-upload"></i><span>Import Excel Database</span>
+                            <input type="file" id="restoreExcel" onchange="importExcelDatabase(event)" accept=".xlsx,.xls" class="hidden">
+                        </label>
+                    </div>
+                </div>
+
                 <!-- Custom Categories -->
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
                     <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
@@ -672,6 +718,8 @@
             initChart();
             // Keep the purge running if the page stays open past midnight
             setInterval(() => { if (purgeOldPaidForecasts() > 0) { renderAll(); renderCalendar(); } }, 60 * 60 * 1000);
+            restoreExcelConnection();
+            window.addEventListener('focus', () => checkExcelExternalChange(false));
         });
 
         function formatPHP(num) {
@@ -684,6 +732,7 @@
         function saveData() {
             localStorage.setItem('budgetAppV15', JSON.stringify(data));
             renderAll();
+            scheduleExcelSync();
         }
 
         function applyHubTitle() {
@@ -698,6 +747,7 @@
             if(val) {
                 hubTitle = val;
                 localStorage.setItem('tine_hub_title', hubTitle);
+                scheduleExcelSync();
                 applyHubTitle();
                 alert('Hub title updated successfully!');
             }
@@ -1103,84 +1153,264 @@
             createOrUpdate('budgetSavingsChart', 'bar', savData, { plugins: { legend: { display: false }, title: { display: true, text: 'Savings Balances' } } });
         }
 
-        // Multi-Tab Excel Download with SheetJS
-        function exportToExcelWithCharts() {
+        // ================= EXCEL DATABASE (export + import) =================
+        // One sheet per table. Row 1 = column names (keep them exactly). Dates as YYYY-MM-DD.
+        const DB_SHEETS = {
+            Transactions:     ['id', 'date', 'title', 'amount', 'category', 'type'],
+            Savings:          ['id', 'date', 'name', 'initial', 'balance', 'interest', 'withdrawal', 'deposit'],
+            SavingsInterests: ['id', 'savingsId', 'title', 'amount', 'date'],
+            Loans:            ['id', 'name', 'principal', 'remaining', 'installment', 'type', 'months', 'freq', 'startDate', 'dueDates'],
+            LoanInterests:    ['id', 'loanId', 'title', 'amount', 'date'],
+            Forecasts:        ['id', 'status', 'type', 'category', 'title', 'amount', 'date'],
+            Tasks:            ['id', 'activity', 'date', 'scheduleType', 'startTime', 'endTime', 'category', 'urgency', 'link', 'presLink', 'status', 'remarks'],
+            Categories:       ['category'],
+            TaskCategories:   ['category'],
+            Settings:         ['hubTitle']
+        };
+
+        function buildDatabaseWorkbook() {
             const wb = XLSX.utils.book_new();
-
-            // Tab 1: Budget Page
-            const budgetRows = [
-                ["Ate Tine's Budget & Transactions Summary"],
-                [],
-                ["Date", "Title", "Amount (PHP)", "Category", "Type"]
-            ];
-            getFilteredBudgetTransactions().forEach(t => {
-                budgetRows.push([t.date, t.title, t.amount, t.category, t.type]);
+            const tables = {
+                Transactions: data.transactions,
+                Savings: data.savings,
+                SavingsInterests: data.savingsInterests || [],
+                Loans: data.loans,
+                LoanInterests: data.loanInterests || [],
+                Forecasts: data.forecasts,
+                Tasks: tasks,
+                Categories: data.categories.map(c => ({ category: c })),
+                TaskCategories: customCategories.map(c => ({ category: c })),
+                Settings: [{ hubTitle: hubTitle }]
+            };
+            Object.keys(DB_SHEETS).forEach(name => {
+                const cols = DB_SHEETS[name];
+                const aoa = [cols, ...tables[name].map(r => cols.map(c => (r[c] === undefined || r[c] === null) ? '' : r[c]))];
+                const ws = XLSX.utils.aoa_to_sheet(aoa);
+                ws['!cols'] = cols.map(c => ({ wch: Math.max(14, c.length + 4) }));
+                XLSX.utils.book_append_sheet(wb, ws, name);
             });
-            const ws1 = XLSX.utils.aoa_to_sheet(budgetRows);
-            XLSX.utils.book_append_sheet(wb, ws1, "Budget Page");
+            return wb;
+        }
 
-            // Tab 2: Savings Page
-            const savingsRows = [
-                ["Ate Tine's Bank Savings Accounts"],
-                [],
-                ["Date", "Bank / Account Name", "Initial Balance", "Running Balance", "Withdrawals", "Deposits", "Interest Rate (%)"]
-            ];
-            data.savings.forEach(s => {
-                savingsRows.push([s.date, s.name, s.initial, s.balance, s.withdrawal, s.deposit, s.interest]);
+        function exportToExcelWithCharts() {
+            XLSX.writeFile(buildDatabaseWorkbook(), `Ate_Tines_Hub_Database_${todayISO()}.xlsx`);
+        }
+
+        function hasDbSheets(wb) { return Object.keys(DB_SHEETS).some(n => wb.Sheets[n]); }
+
+        // Load a workbook into the hub. Returns true when applied.
+        function applyWorkbook(wb, askConfirm) {
+            if (!hasDbSheets(wb)) { alert('This Excel file has none of the database sheets (Transactions, Savings, Loans, Forecasts, Tasks...).'); return false; }
+            if (askConfirm && !confirm('Replace the data in the sheets found in this Excel file? Tables whose sheet is missing stay as they are.')) return false;
+            xlSuppress = true;
+            try {
+                const rows = name => {
+                    if (!wb.Sheets[name]) return null;
+                    return XLSX.utils.sheet_to_json(wb.Sheets[name], { defval: '' })
+                        .filter(r => Object.values(r).some(v => String(v).trim() !== '') && !Object.values(r).some(v => String(v).trim().toUpperCase() === 'EXAMPLE'));
+                };
+                const num = v => { const n = parseFloat(String(v).replace(/[₱,\s]/g, '')); return isNaN(n) ? 0 : n; };
+                let seq = 0;
+                const gid = v => { const n = Number(v); return (String(v).trim() !== '' && !isNaN(n)) ? n : Date.now() + (seq++); };
+                const dt = v => {
+                    if (typeof v === 'number') { const d = XLSX.SSF.parse_date_code(v); return d ? fmtYMD(d.y, d.m, d.d) : ''; }
+                    const t = String(v).trim();
+                    if (/^\d{4}-\d{2}-\d{2}/.test(t)) return t.slice(0, 10);
+                    const p = new Date(t);
+                    return isNaN(p) ? '' : ymd(p);
+                };
+                const hm = v => {
+                    if (typeof v === 'number' && v >= 0 && v < 1) { const m = Math.round(v * 1440); return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); }
+                    return String(v).trim();
+                };
+                const str = v => String(v === undefined || v === null ? '' : v).trim();
+
+                let r;
+                if ((r = rows('Transactions'))) data.transactions = r.map(x => ({ id: gid(x.id), date: dt(x.date), title: str(x.title), amount: num(x.amount), category: str(x.category).toUpperCase() || 'GENERAL', type: str(x.type) }));
+                if ((r = rows('Savings'))) data.savings = r.map(x => ({ id: gid(x.id), date: dt(x.date), name: str(x.name), initial: num(x.initial), balance: num(x.balance), interest: num(x.interest), withdrawal: num(x.withdrawal), deposit: num(x.deposit) }));
+                if ((r = rows('SavingsInterests'))) data.savingsInterests = r.map(x => ({ id: gid(x.id), savingsId: gid(x.savingsId), title: str(x.title), amount: num(x.amount), date: dt(x.date) }));
+                if ((r = rows('Loans'))) data.loans = r.map(x => ({ id: gid(x.id), name: str(x.name), principal: num(x.principal), remaining: num(x.remaining), installment: num(x.installment), type: str(x.type).toUpperCase() || 'PAYABLE', months: parseInt(x.months) || 1, freq: str(x.freq).toUpperCase() || 'MONTHLY', startDate: dt(x.startDate), dueDates: str(x.dueDates) }));
+                if ((r = rows('LoanInterests'))) data.loanInterests = r.map(x => ({ id: gid(x.id), loanId: gid(x.loanId), title: str(x.title), amount: num(x.amount), date: dt(x.date) }));
+                if ((r = rows('Forecasts'))) data.forecasts = r.map(x => ({ id: gid(x.id), status: str(x.status).toUpperCase() || 'FORECASTED', type: str(x.type).toUpperCase() || 'EXPENSE', category: str(x.category).toUpperCase() || 'GENERAL', title: str(x.title), amount: num(x.amount), date: dt(x.date) }));
+                if ((r = rows('Tasks'))) tasks = r.map(x => ({ id: String(str(x.id) || (Date.now() + (seq++))), activity: str(x.activity), date: dt(x.date), scheduleType: str(x.scheduleType) || 'wholeday', startTime: hm(x.startTime), endTime: hm(x.endTime), category: str(x.category).toUpperCase() || 'WORK', urgency: str(x.urgency).toUpperCase() || 'NORMAL', link: str(x.link), presLink: str(x.presLink), status: str(x.status).toUpperCase() || 'ON GOING', remarks: str(x.remarks) }));
+                if ((r = rows('Categories'))) data.categories = r.map(x => str(x.category).toUpperCase()).filter(Boolean);
+                if ((r = rows('TaskCategories'))) customCategories = r.map(x => str(x.category).toUpperCase()).filter(Boolean);
+                if ((r = rows('Settings')) && r[0] && str(r[0].hubTitle)) { hubTitle = str(r[0].hubTitle); localStorage.setItem('tine_hub_title', hubTitle); }
+
+                data.capFixV1 = true;
+                localStorage.setItem('tine_custom_categories', JSON.stringify(customCategories));
+                saveData(); saveAndRefreshTasks(); applyHubTitle(); initCustomCategoriesUI();
+                return true;
+            } catch (err) {
+                alert('Could not read this Excel file. Please use a file exported from this hub or the database template.');
+                return false;
+            } finally { xlSuppress = false; }
+        }
+
+        function importExcelDatabase(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+                    if (applyWorkbook(wb, true)) alert('Excel database imported successfully!');
+                } catch (err) { alert('Could not read this Excel file.'); }
+                event.target.value = '';
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // ================= LIVE EXCEL FILE CONNECTION (real-time saving) =================
+        // Uses the browser's File System Access API (Chrome / Edge on desktop).
+        let xlHandle = null, xlTimer = null, xlSaving = false, xlSuppress = false;
+        let xlState = 'off';   // off | ready | saving | needs | error
+        let xlLastSaved = null, xlErr = '';
+        const XL_TYPES = [{ description: 'Excel workbook', accept: { 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'] } }];
+        const xlSupported = () => typeof window !== 'undefined' && 'showOpenFilePicker' in window && 'showSaveFilePicker' in window;
+        const getXlMod = () => parseInt(localStorage.getItem('hubXlMod') || '0', 10);
+        const setXlMod = n => localStorage.setItem('hubXlMod', String(n));
+
+        // remember the file between visits
+        const xlDb = () => new Promise((res, rej) => { const r = indexedDB.open('hubExcel', 1); r.onupgradeneeded = () => r.result.createObjectStore('h'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+        async function xlIdb(mode, key, val) {
+            const db = await xlDb();
+            return new Promise((res, rej) => {
+                const t = db.transaction('h', mode === 'get' ? 'readonly' : 'readwrite');
+                const st = t.objectStore('h');
+                const rq = mode === 'put' ? st.put(val, key) : mode === 'del' ? st.delete(key) : st.get(key);
+                t.oncomplete = () => res(rq.result);
+                t.onerror = () => rej(t.error);
             });
-            const ws2 = XLSX.utils.aoa_to_sheet(savingsRows);
-            XLSX.utils.book_append_sheet(wb, ws2, "Savings Page");
+        }
 
-            // Tab 3: Loans
-            const loanRows = [
-                ["Ate Tine's Active Loans"],
-                [],
-                ["Loan Name", "Principal Amount", "Installment", "Remaining Balance", "Type", "Terms (Mos)", "Frequency", "Start Date", "Due Dates"]
-            ];
-            data.loans.forEach(l => {
-                loanRows.push([l.name, l.principal, l.installment, l.remaining, l.type, l.months, l.freq, l.startDate || '', l.dueDates]);
-            });
-            const ws3 = XLSX.utils.aoa_to_sheet(loanRows);
-            XLSX.utils.book_append_sheet(wb, ws3, "Loans");
+        async function xlEnsurePermission(h) {
+            const opts = { mode: 'readwrite' };
+            if ((await h.queryPermission(opts)) === 'granted') return true;
+            return (await h.requestPermission(opts)) === 'granted';
+        }
 
-            // Tab 4: Forecast
-            const forecastRows = [
-                ["Ate Tine's Forecast Manager"],
-                [],
-                ["Status", "Date", "Title", "Amount (PHP)", "Category", "Type"]
-            ];
-            data.forecasts.forEach(f => {
-                forecastRows.push([f.status, f.date, f.title, f.amount, f.category, f.type]);
-            });
-            const ws4 = XLSX.utils.aoa_to_sheet(forecastRows);
-            XLSX.utils.book_append_sheet(wb, ws4, "Forecast");
+        function renderXlStatus() {
+            const dot = document.getElementById('xlDot'), txt = document.getElementById('xlStatusText'), hb = document.getElementById('xlHeaderBtn');
+            if (!dot || !txt) return;
+            const show = (id, on) => { const e = document.getElementById(id); if (e) e.classList.toggle('hidden', !on); };
+            const name = xlHandle ? xlHandle.name : '';
+            let color = 'bg-slate-300', msg = 'Not connected', head = 'Excel: Off', headCls = 'bg-slate-500';
+            if (!xlSupported()) { msg = 'Live Excel saving is not supported in this browser. Please use Chrome or Edge on a computer.'; head = 'Excel: N/A'; }
+            else if (xlState === 'ready') { color = 'bg-emerald-500'; msg = `Connected to "${name}" - saved ${xlLastSaved ? xlLastSaved.toLocaleTimeString('en-PH') : ''}`; head = 'Excel: Synced'; headCls = 'bg-emerald-600'; }
+            else if (xlState === 'saving') { color = 'bg-indigo-500'; msg = `Saving to "${name}"...`; head = 'Excel: Saving'; headCls = 'bg-indigo-500'; }
+            else if (xlState === 'needs') { color = 'bg-amber-500'; msg = `"${name}" is remembered. Click Reconnect and allow access to continue saving.`; head = 'Excel: Reconnect'; headCls = 'bg-amber-500'; }
+            else if (xlState === 'error') { color = 'bg-red-500'; msg = `Could not save to "${name}": ${xlErr}. Make sure the file is not open in Excel. It will retry on your next change.`; head = 'Excel: Error'; headCls = 'bg-red-500'; }
+            dot.className = 'w-2.5 h-2.5 rounded-full ' + color;
+            txt.innerText = msg;
+            if (hb) { hb.className = 'px-2.5 py-1.5 rounded-lg text-xs font-semibold shadow transition-all flex items-center space-x-1 ' + headCls; hb.querySelector('span').innerText = head; }
+            const sup = xlSupported();
+            show('xlBtnsOff', sup && !xlHandle);
+            show('xlBtnsNeeds', sup && xlState === 'needs');
+            show('xlBtnsOn', sup && !!xlHandle && xlState !== 'needs');
+        }
 
-            // Tab 5: Task
-            const taskRows = [
-                ["Ate Tine's Task Planner"],
-                [],
-                ["Status", "Urgency", "Activity Name", "Date", "Schedule Type", "Category", "Remarks"]
-            ];
-            tasks.forEach(ts => {
-                taskRows.push([ts.status, ts.urgency, ts.activity, ts.date, ts.scheduleType, ts.category, ts.remarks || '']);
-            });
-            const ws5 = XLSX.utils.aoa_to_sheet(taskRows);
-            XLSX.utils.book_append_sheet(wb, ws5, "Task");
+        async function writeExcelNow() {
+            if (!xlHandle || xlState === 'needs') return;
+            try {
+                xlSaving = true; xlState = 'saving'; renderXlStatus();
+                const buf = XLSX.write(buildDatabaseWorkbook(), { bookType: 'xlsx', type: 'array' });
+                const w = await xlHandle.createWritable();
+                await w.write(buf);
+                await w.close();
+                setXlMod((await xlHandle.getFile()).lastModified);
+                xlLastSaved = new Date(); xlState = 'ready';
+            } catch (e) {
+                xlState = 'error'; xlErr = (e && e.message) ? e.message : String(e);
+            } finally { xlSaving = false; renderXlStatus(); }
+        }
 
-            // Tab 6: Calendar
-            const calRows = [
-                ["Ate Tine's Calendar Summary"],
-                [],
-                ["Date", "Item Title", "Item Type", "Category / Details"]
-            ];
-            tasks.forEach(ts => calRows.push([ts.date, ts.activity, 'Task', ts.category]));
-            data.transactions.forEach(tx => calRows.push([tx.date, tx.title, 'Transaction', tx.type]));
-            data.forecasts.forEach(fc => calRows.push([fc.date, fc.title, 'Forecast', fc.type]));
-            const ws6 = XLSX.utils.aoa_to_sheet(calRows);
-            XLSX.utils.book_append_sheet(wb, ws6, "Calendar");
+        // called after every change (debounced) - this is the real-time saving
+        function scheduleExcelSync() {
+            if (!xlHandle || xlSuppress || xlState === 'needs') return;
+            clearTimeout(xlTimer);
+            xlTimer = setTimeout(() => { if (xlSaving) scheduleExcelSync(); else writeExcelNow(); }, 700);
+        }
 
-            // Save file
-            XLSX.writeFile(wb, `Ate_Tines_Hub_Report_${todayISO()}.xlsx`);
+        async function xlAttach(h, existing) {
+            if (!(await xlEnsurePermission(h))) { alert('Permission to edit the file was not granted.'); return; }
+            xlHandle = h;
+            await xlIdb('put', 'handle', h);
+            if (existing) {
+                const file = await h.getFile();
+                if (file.size > 0) {
+                    try {
+                        const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+                        if (hasDbSheets(wb) && confirm('This Excel file already contains hub data.\n\nOK = Load the Excel data into the hub\nCancel = Keep the hub data and overwrite the Excel file')) applyWorkbook(wb, false);
+                    } catch (e) { /* unreadable file: it will be overwritten */ }
+                }
+            }
+            await writeExcelNow();
+        }
+
+        async function connectExcelFile() {
+            if (!xlSupported()) { renderXlStatus(); return; }
+            try { const [h] = await showOpenFilePicker({ types: XL_TYPES, multiple: false }); await xlAttach(h, true); }
+            catch (e) { if (e.name !== 'AbortError') alert('Could not open the file: ' + e.message); }
+        }
+
+        async function createExcelFile() {
+            if (!xlSupported()) { renderXlStatus(); return; }
+            try { const h = await showSaveFilePicker({ suggestedName: 'Ate_Tines_Hub_Database.xlsx', types: XL_TYPES }); await xlAttach(h, false); }
+            catch (e) { if (e.name !== 'AbortError') alert('Could not create the file: ' + e.message); }
+        }
+
+        async function disconnectExcelFile() {
+            if (!confirm('Disconnect from the Excel file? Your data stays in the hub, but the file will stop updating.')) return;
+            clearTimeout(xlTimer);
+            xlHandle = null; xlState = 'off';
+            try { await xlIdb('del', 'handle'); } catch (e) {}
+            renderXlStatus();
+        }
+
+        async function reconnectExcelFile() {
+            if (!xlHandle) return;
+            try {
+                if (await xlEnsurePermission(xlHandle)) { xlState = 'ready'; await checkExcelExternalChange(true); }
+            } catch (e) { alert('Could not reconnect: ' + e.message); }
+            renderXlStatus();
+        }
+
+        async function loadFromExcelNow() {
+            if (!xlHandle) return;
+            try {
+                const f = await xlHandle.getFile();
+                if (applyWorkbook(XLSX.read(await f.arrayBuffer(), { type: 'array' }), true)) { setXlMod(f.lastModified); await writeExcelNow(); }
+            } catch (e) { alert('Could not read the Excel file: ' + e.message); }
+        }
+
+        // If the file was edited outside the hub (e.g. in Excel), offer to load the changes
+        async function checkExcelExternalChange(force) {
+            if (!xlHandle || xlSaving || xlState === 'needs') return;
+            try {
+                const f = await xlHandle.getFile();
+                if (f.lastModified !== getXlMod()) {
+                    if (confirm('The Excel file was changed outside the hub.\n\nOK = Load the changes from Excel\nCancel = Keep the hub data and overwrite the Excel file')) {
+                        applyWorkbook(XLSX.read(await f.arrayBuffer(), { type: 'array' }), false);
+                        setXlMod(f.lastModified);
+                    }
+                    await writeExcelNow();
+                } else if (force) await writeExcelNow();
+            } catch (e) { /* ignore */ }
+        }
+
+        async function restoreExcelConnection() {
+            renderXlStatus();
+            if (!xlSupported()) return;
+            try {
+                const h = await xlIdb('get', 'handle');
+                if (!h) return;
+                xlHandle = h;
+                xlState = (await h.queryPermission({ mode: 'readwrite' })) === 'granted' ? 'ready' : 'needs';
+                renderXlStatus();
+                if (xlState === 'ready') await checkExcelExternalChange(false);
+            } catch (e) { xlHandle = null; xlState = 'off'; }
+            renderXlStatus();
         }
 
         // Safety net: PAID forecasts are normally removed the moment they are paid.
@@ -1189,7 +1419,7 @@
             const before = data.forecasts.length;
             data.forecasts = data.forecasts.filter(f => f.status !== 'PAID');
             const removed = before - data.forecasts.length;
-            if (removed > 0) localStorage.setItem('budgetAppV15', JSON.stringify(data));
+            if (removed > 0) { localStorage.setItem('budgetAppV15', JSON.stringify(data)); scheduleExcelSync(); }
             return removed;
         }
 
@@ -1415,7 +1645,7 @@
 
         function updateRemarks(id, val) {
             const t = tasks.find(x => x.id === id);
-            if(t) { t.remarks = val; localStorage.setItem('tine_tasks', JSON.stringify(tasks)); }
+            if(t) { t.remarks = val; localStorage.setItem('tine_tasks', JSON.stringify(tasks)); scheduleExcelSync(); }
         }
 
         function updateStatus(id, st) {
@@ -1425,6 +1655,7 @@
 
         function saveAndRefreshTasks() {
             localStorage.setItem('tine_tasks', JSON.stringify(tasks));
+            scheduleExcelSync();
             renderTasks();
             renderCalendar();
             updateChart();

@@ -664,7 +664,7 @@
                 data.loans.forEach(l => loanForecasts(l).forEach(f => { if (l.installment > 0 && f.amount > l.installment) f.amount = l.installment; }));
                 data.capFixV1 = true;
             }
-            data.loans.forEach(reconcileLoanForecasts);
+            data.loans.forEach(l => reconcileLoanForecasts(l, true)); // on page load: never delete anything
             localStorage.setItem('budgetAppV15', JSON.stringify(data));
             renderAll();
             renderTasks();
@@ -871,17 +871,22 @@
             return fmtYMD(ny, nm, clamp(ny, nm, days[0]));
         }
 
-        function reconcileLoanForecasts(loan) {
+        // extendOnly = true: never deletes or shrinks anything, it only adds installments if the forecast total is short
+        function reconcileLoanForecasts(loan, extendOnly = false) {
             if (!loan) return;
             let left = r2(Math.max(0, loan.remaining));
             const remove = new Set();
             const kept = [];
-            loanForecasts(loan).forEach(f => {
-                if (left <= 0) { remove.add(f.id); return; }
-                f.amount = r2(Math.min(f.amount, left));
-                left = r2(left - f.amount);
-                kept.push(f);
-            });
+            if (extendOnly) {
+                loanForecasts(loan).forEach(f => { left = r2(left - f.amount); kept.push(f); });
+            } else {
+                loanForecasts(loan).forEach(f => {
+                    if (left <= 0) { remove.add(f.id); return; }
+                    f.amount = r2(Math.min(f.amount, left));
+                    left = r2(left - f.amount);
+                    kept.push(f);
+                });
+            }
             if (left > 0) {
                 const days = loanDueDays(loan);
                 const inst = loan.installment > 0 ? loan.installment : left;
